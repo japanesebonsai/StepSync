@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
@@ -14,12 +15,12 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        val button_register = findViewById<Button>(R.id.button_register)
+        val text_register = findViewById<TextView>(R.id.text_register)
         val button_login = findViewById<Button>(R.id.button_login)
         val edit_username = findViewById<EditText>(R.id.edit_username)
         val edit_password = findViewById<EditText>(R.id.edit_password)
 
-        button_register.setOnClickListener {
+        text_register.setOnClickListener {
             Log.e("CSIT284", "Proceeding to register page")
             val intent_register = Intent(this, RegisterActivity::class.java)
             startActivity(intent_register)

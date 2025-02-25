@@ -106,7 +106,7 @@
         android:textColor="@android:color/white"/>
 
     <TextView
-        android:id="@+id/button_login"
+        android:id="@+id/text_login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="#0f0f0f"

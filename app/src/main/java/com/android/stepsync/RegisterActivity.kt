@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
@@ -18,7 +19,7 @@ class RegisterActivity : AppCompatActivity() {
         val edit_password = findViewById<EditText>(R.id.edit_password)
         val edit_confirmpassword = findViewById<EditText>(R.id.edit_confirmpassword)
         val button_register = findViewById<Button>(R.id.button_register)
-        val button_login = findViewById<Button>(R.id.button_login)
+        val text_login = findViewById<TextView>(R.id.text_login)
         val intent_login = Intent(this, LoginActivity::class.java)
 
         button_register.setOnClickListener {
@@ -42,7 +43,7 @@ class RegisterActivity : AppCompatActivity() {
 
         }
 
-        button_login.setOnClickListener {
+        text_login.setOnClickListener {
             startActivity(intent_login)
         }
     }
