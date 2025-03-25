@@ -3,16 +3,16 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:padding="20sp"
     android:background="@drawable/gradient_drawable">
 
     <ImageView
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="40sp"
         android:src="@drawable/stepsync_icon"
-        android:layout_width="180dp"
-        android:layout_height="180dp"
+        android:layout_width="180sp"
+        android:layout_height="180sp"
         android:layout_gravity="center"
-        android:layout_marginBottom="40dp"/>
+        android:layout_marginBottom="40sp"/>
 
 
     <TextView
@@ -20,32 +20,32 @@
         android:layout_height="wrap_content"
         android:textAlignment="center"
         android:text="Create an Account"
-        android:fontFamily="@font/roboto"
+        android:fontFamily="@font/f42dotsans_bold"
         android:textStyle="bold"
         android:textColor="#0f0f0f"
-        android:textSize="20dp"
-        android:layout_marginBottom="20dp"/>
+        android:textSize="20sp"
+        android:layout_marginBottom="20sp"/>
 
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="20sp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
+            android:layout_marginRight="8sp"
             android:text="Username"
-            android:fontFamily="@font/roboto"
-            android:textStyle="italic"
+            android:fontFamily="@font/f42dotsans_bold"
+
             android:textColor="#0f0f0f"
-            android:textSize="16dp"/>
+            android:textSize="16sp"/>
 
         <EditText
             android:id="@+id/edit_username"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="40sp"
             android:background="@drawable/placeholder2_drawable" />
     </LinearLayout>
 
@@ -53,20 +53,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="20sp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
+            android:layout_marginRight="8sp"
             android:text="Password"
-            android:fontFamily="@font/roboto"
-            android:textStyle="italic"
+            android:fontFamily="@font/f42dotsans_bold"
+
             android:textColor="#0f0f0f"
-            android:textSize="16dp"/>
+            android:textSize="16sp"/>
         <EditText
             android:id="@+id/edit_password"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="40sp"
             android:background="@drawable/placeholder2_drawable"/>
     </LinearLayout>
 
@@ -74,33 +74,32 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="20sp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
+            android:layout_marginRight="8sp"
             android:text="Confirm Password"
-            android:fontFamily="@font/roboto"
-            android:textStyle="italic"
+            android:fontFamily="@font/f42dotsans_bold"
             android:textColor="#0f0f0f"
-            android:textSize="16dp"/>
+            android:textSize="16sp"/>
 
         <EditText
             android:id="@+id/edit_confirmpassword"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="40sp"
             android:background="@drawable/placeholder2_drawable"/>
 
     </LinearLayout>
 
     <Button
         android:id="@+id/button_register"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="30sp"
+        android:layout_marginBottom="4sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Register"
-        android:fontFamily="@font/roboto"
+        android:fontFamily="@font/f42dotsans_bold"
         android:textStyle="bold"
         android:backgroundTint="#00adef"
         android:textColor="@android:color/white"/>
@@ -110,12 +109,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="#0f0f0f"
-        android:fontFamily="@font/roboto"
-        android:textStyle="bold"
+        android:fontFamily="@font/f42dotsans_bold"
         android:text="Back to Login"
         android:layout_gravity="center"
         android:textAlignment="center"
         android:backgroundTint="#f2f2f2"
-        android:textSize="12dp"/>
+        android:textSize="12sp"/>
 
 </LinearLayout>

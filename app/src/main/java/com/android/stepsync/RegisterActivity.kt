@@ -1,6 +1,5 @@
 package com.android.stepsync
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -20,7 +19,6 @@ class RegisterActivity : AppCompatActivity() {
         val edit_confirmpassword = findViewById<EditText>(R.id.edit_confirmpassword)
         val button_register = findViewById<Button>(R.id.button_register)
         val text_login = findViewById<TextView>(R.id.text_login)
-        val intent_login = Intent(this, LoginActivity::class.java)
 
         button_register.setOnClickListener {
             val username = edit_username.text
@@ -36,15 +34,14 @@ class RegisterActivity : AppCompatActivity() {
                     return@setOnClickListener
                 } else {
                     Log.e("CSIT284", "Account created")
-                    startActivity(intent_login)
-                    finish()
+                    startActivity(Intent(this, LoginActivity::class.java))
                 }
             }
 
         }
 
         text_login.setOnClickListener {
-            startActivity(intent_login)
+            startActivity(Intent(this, LoginActivity::class.java))
         }
     }
 }

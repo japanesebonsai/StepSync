@@ -1,6 +1,6 @@
 package com.android.stepsync
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -20,10 +20,12 @@ class LoginActivity : AppCompatActivity() {
         val edit_username = findViewById<EditText>(R.id.edit_username)
         val edit_password = findViewById<EditText>(R.id.edit_password)
 
+        val sharedPref = getSharedPreferences("myPref", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+
         text_register.setOnClickListener {
             Log.e("CSIT284", "Proceeding to register page")
-            val intent_register = Intent(this, RegisterActivity::class.java)
-            startActivity(intent_register)
+            startActivity(Intent(this, RegisterActivity::class.java))
         }
 
         button_login.setOnClickListener {
@@ -35,11 +37,8 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val intent_landing = Intent(this, LandingActivity::class.java)
             Log.e("CSIT284", "Proceeding to landing page")
-            intent_landing.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent_landing)
-            finish()
+            startActivity(Intent(this, LandingActivity::class.java))
         }
 
     }

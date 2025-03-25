@@ -1,6 +1,5 @@
 package com.android.stepsync
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -17,15 +16,11 @@ class LandingActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.navigation_dashboard -> true
                 R.id.navigation_profile -> {
-                    val intent = Intent(this, ProfileActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    startActivity(intent)
+                    startActivity(Intent(this, ProfileActivity::class.java))
                     true
                 }
                 R.id.navigation_settings -> {
-                    val intent = Intent(this, SettingsActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    startActivity(intent)
+                    startActivity(Intent(this, SettingsActivity::class.java))
                     true
                 }
                 else -> false

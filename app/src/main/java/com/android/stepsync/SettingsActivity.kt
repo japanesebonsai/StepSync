@@ -12,25 +12,20 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         val text_developer = findViewById<TextView>(R.id.text_developer)
-        text_developer.setOnClickListener{
-            val intent = Intent(this, DeveloperActivity::class.java)
-            startActivity(intent)
-        }
-
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+
+        text_developer.setOnClickListener{
+            startActivity(Intent(this, DeveloperActivity::class.java))
+        }
 
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_dashboard -> {
-                    val intent = Intent(this, LandingActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    startActivity(intent)
+                    startActivity(Intent(this, LandingActivity::class.java))
                     true
                 }
                 R.id.navigation_profile -> {
-                    val intent = Intent(this, ProfileActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    startActivity(intent)
+                    startActivity(Intent(this, ProfileActivity::class.java))
                     true
                 }
                 R.id.navigation_settings -> true
