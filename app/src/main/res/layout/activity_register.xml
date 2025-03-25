@@ -6,14 +6,6 @@
     android:padding="20sp"
     android:background="@drawable/gradient_drawable">
 
-    <ImageView
-        android:layout_marginTop="40sp"
-        android:src="@drawable/stepsync_icon"
-        android:layout_width="180sp"
-        android:layout_height="180sp"
-        android:layout_gravity="center"
-        android:layout_marginBottom="40sp"/>
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,7 +15,7 @@
         android:textStyle="bold"
         android:textColor="#0f0f0f"
         android:textSize="20sp"
-        android:layout_marginBottom="20sp"/>
+        android:layout_marginVertical="40sp"/>
 
 
     <LinearLayout
@@ -41,6 +33,27 @@
 
         <EditText
             android:id="@+id/edit_username"
+            android:layout_width="match_parent"
+            android:layout_height="40sp"
+            android:paddingHorizontal="16sp"
+            android:background="@drawable/placeholder2_drawable" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="20sp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8sp"
+            android:text="Email"
+            android:fontFamily="@font/f42dotsans_bold"
+            android:textColor="#0f0f0f"/>
+
+        <EditText
+            android:id="@+id/edit_email"
             android:layout_width="match_parent"
             android:layout_height="40sp"
             android:paddingHorizontal="16sp"

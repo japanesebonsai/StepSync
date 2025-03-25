@@ -19,7 +19,7 @@ class ProfileActivity : AppCompatActivity() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
 
         val app = application as MyApplication
-        val informationList = listOf(app.username, "johndoe@example.com")
+        val informationList = listOf(app.username, app.email)
         val arrayAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_list_item_1,

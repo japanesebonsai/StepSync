@@ -16,6 +16,7 @@ class RegisterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_register)
 
         val edit_username = findViewById<EditText>(R.id.edit_username)
+        val edit_email = findViewById<EditText>(R.id.edit_email)
         val edit_password = findViewById<EditText>(R.id.edit_password)
         val edit_confirmpassword = findViewById<EditText>(R.id.edit_confirmpassword)
         val button_register = findViewById<Button>(R.id.button_register)
@@ -23,10 +24,11 @@ class RegisterActivity : AppCompatActivity() {
 
         button_register.setOnClickListener {
             val username = edit_username.text
+            val email = edit_email.text
             val password = edit_password.text
             val confirmpassword = edit_confirmpassword.text
 
-            if(username.isNullOrEmpty() || password.isNullOrEmpty() || confirmpassword.isNullOrEmpty()){
+            if(username.isNullOrEmpty() || password.isNullOrEmpty() || confirmpassword.isNullOrEmpty() || email.isNullOrEmpty()){
                 Toast.makeText(this , "Fields must not be left blank", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             } else {
@@ -35,12 +37,14 @@ class RegisterActivity : AppCompatActivity() {
                     return@setOnClickListener
                 } else {
                     Log.e("CSIT284", "Account created")
+                    val app = application as MyApplication
+                    app.username = username.toString()
+                    app.email = email.toString()
+                    app.password = password.toString()
                     startActivity(Intent(this, LoginActivity::class.java))
                 }
             }
-            val app = application as MyApplication
-            app.username = username.toString()
-            app.password = password.toString()
+
 
         }
 

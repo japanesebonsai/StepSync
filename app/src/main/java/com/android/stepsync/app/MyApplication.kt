@@ -4,7 +4,8 @@ import android.app.Application
 
 class MyApplication : Application() {
     var username : String = "admin"
-    var password : String = "123"
+    var email : String = "admin"
+    var password : String = "admin"
 
     override fun onCreate(){
         super.onCreate()
