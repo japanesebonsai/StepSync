@@ -10,7 +10,12 @@ import android.widget.TextView
 import com.android.stepsync.R
 import com.android.stepsync.data.Developer
 
-class DeveloperCustomListViewAdapter(private val context: Context, private val developerList: List<Developer>): BaseAdapter() {
+class DeveloperCustomListViewAdapter(
+    private val context: Context,
+    private val developerList: List<Developer>,
+    private val onClick: (Developer) -> Unit,
+    private val onLongClick: (Developer) -> Unit
+): BaseAdapter() {
     override fun getCount(): Int = developerList.size
 
     override fun getItem(position: Int): Any = developerList[position]
@@ -28,6 +33,15 @@ class DeveloperCustomListViewAdapter(private val context: Context, private val d
         imageview_picture.setImageResource(developer.photoSrc)
         fullname.setText("${developer.lastname}, ${developer.firstname} ${developer.middlename}")
         email.setText("${developer.email}")
+
+        view.setOnClickListener{
+            onClick(developer)
+        }
+
+        view.setOnLongClickListener{
+            onLongClick(developer)
+            true
+        }
 
         return view
     }

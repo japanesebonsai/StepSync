@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.stepsync.app.MyApplication
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -25,8 +26,26 @@ class ProfileActivity : AppCompatActivity() {
             informationList
         )
 
-        val listview = findViewById<ListView>(R.id.listview_profile)
-        listview.adapter = arrayAdapter
+        val listView = findViewById<ListView>(R.id.listview_profile)
+        listView.adapter = arrayAdapter
+
+        listView.setOnItemClickListener{ _, _, position, _ ->
+            Toast.makeText(
+                this,
+                "${informationList[position]}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        listView.setOnItemLongClickListener{ _, _, position, _ ->
+            Toast.makeText(
+                this,
+                "Long clicked ${informationList[position]}",
+                Toast.LENGTH_LONG
+            ).show()
+            true
+        }
+
 
         text_signout.setOnClickListener(){
             startActivity(Intent(this, LogoutActivity::class.java))
@@ -48,6 +67,5 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         bottomNavigationView.selectedItemId = R.id.navigation_profile
-
     }
 }

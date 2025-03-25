@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ListView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.stepsync.data.Developer
 import com.android.stepsync.helper.DeveloperCustomListViewAdapter
@@ -20,7 +21,18 @@ class DeveloperActivity : AppCompatActivity() {
             Developer("Primo Christian", "", "Montejo", "primochristian.montejo@cit.edu", R.drawable.user_icon)
         )
 
-        val adapter = DeveloperCustomListViewAdapter(this, developerList)
+        val adapter = DeveloperCustomListViewAdapter(
+            this,
+            developerList,
+            onClick = { developer ->
+                Toast.makeText(this, "${developer.firstname} was clicked", Toast.LENGTH_LONG).show()
+            },
+            onLongClick = { developer ->
+                Toast.makeText(this, "${developer.firstname} was long clicked", Toast.LENGTH_LONG)
+                    .show()
+            })
+
+
         listview_developer.adapter = adapter
 
         val button_back = findViewById<Button>(R.id.button_back)
