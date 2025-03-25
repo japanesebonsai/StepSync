@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.android.stepsync.app.MyApplication
 
 class RegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +38,9 @@ class RegisterActivity : AppCompatActivity() {
                     startActivity(Intent(this, LoginActivity::class.java))
                 }
             }
+            val app = application as MyApplication
+            app.username = username.toString()
+            app.password = password.toString()
 
         }
 

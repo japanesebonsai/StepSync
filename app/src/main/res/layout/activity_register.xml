@@ -14,7 +14,6 @@
         android:layout_gravity="center"
         android:layout_marginBottom="40sp"/>
 
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,14 +37,13 @@
             android:layout_marginRight="8sp"
             android:text="Username"
             android:fontFamily="@font/f42dotsans_bold"
-
-            android:textColor="#0f0f0f"
-            android:textSize="16sp"/>
+            android:textColor="#0f0f0f"/>
 
         <EditText
             android:id="@+id/edit_username"
             android:layout_width="match_parent"
             android:layout_height="40sp"
+            android:paddingHorizontal="16sp"
             android:background="@drawable/placeholder2_drawable" />
     </LinearLayout>
 
@@ -60,13 +58,12 @@
             android:layout_marginRight="8sp"
             android:text="Password"
             android:fontFamily="@font/f42dotsans_bold"
-
-            android:textColor="#0f0f0f"
-            android:textSize="16sp"/>
+            android:textColor="#0f0f0f" />
         <EditText
             android:id="@+id/edit_password"
             android:layout_width="match_parent"
             android:layout_height="40sp"
+            android:paddingHorizontal="16sp"
             android:background="@drawable/placeholder2_drawable"/>
     </LinearLayout>
 
@@ -81,13 +78,13 @@
             android:layout_marginRight="8sp"
             android:text="Confirm Password"
             android:fontFamily="@font/f42dotsans_bold"
-            android:textColor="#0f0f0f"
-            android:textSize="16sp"/>
+            android:textColor="#0f0f0f"/>
 
         <EditText
             android:id="@+id/edit_confirmpassword"
             android:layout_width="match_parent"
             android:layout_height="40sp"
+            android:paddingHorizontal="16sp"
             android:background="@drawable/placeholder2_drawable"/>
 
     </LinearLayout>

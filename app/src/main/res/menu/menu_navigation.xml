@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
+
+        <item
         android:id="@+id/navigation_dashboard"
         android:icon="@drawable/dashboard_icon"
-        android:title="@string/dashboard" />
+        android:title="Dashboard"/>
 
-    <item
-        android:id="@+id/navigation_profile"
-        android:icon="@drawable/user_icon"
-        android:title="Profile" />
+        <item
+            android:id="@+id/navigation_profile"
+            android:icon="@drawable/user_icon"
+            android:title="Profile" />
 
-    <item
-        android:id="@+id/navigation_settings"
-        android:icon="@drawable/settings_icon"
-        android:title="Settings" />
+        <item
+            android:id="@+id/navigation_settings"
+            android:icon="@drawable/settings_icon"
+            android:title="Settings" />
+
+
 </menu>
