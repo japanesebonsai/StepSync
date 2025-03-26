@@ -9,6 +9,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.stepsync.app.MyApplication
+import com.android.stepsync.utils.toast
 
 class RegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,23 +30,23 @@ class RegisterActivity : AppCompatActivity() {
             val confirmpassword = edit_confirmpassword.text
 
             if(username.isNullOrEmpty() || password.isNullOrEmpty() || confirmpassword.isNullOrEmpty() || email.isNullOrEmpty()){
-                Toast.makeText(this , "Fields must not be left blank", Toast.LENGTH_SHORT).show()
+                toast("Fields must not be left blank")
                 return@setOnClickListener
             } else {
                 if(!password.toString().equals(confirmpassword.toString())){
-                    Toast.makeText(this , "Passwords do not match", Toast.LENGTH_SHORT).show()
+                    toast("Passwords do not match")
                     return@setOnClickListener
                 } else {
                     Log.e("CSIT284", "Account created")
+
                     val app = application as MyApplication
                     app.username = username.toString()
                     app.email = email.toString()
                     app.password = password.toString()
+
                     startActivity(Intent(this, LoginActivity::class.java))
                 }
             }
-
-
         }
 
         text_login.setOnClickListener {

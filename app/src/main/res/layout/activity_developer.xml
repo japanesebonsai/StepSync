@@ -96,7 +96,6 @@
         android:background="@drawable/placeholder_drawable"
         android:elevation="4sp">
 
-
         <ListView
             android:id="@+id/listview_developer"
             android:layout_width="match_parent"

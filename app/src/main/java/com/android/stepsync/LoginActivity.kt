@@ -10,6 +10,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.stepsync.app.MyApplication
+import com.android.stepsync.utils.isNotValid
+import com.android.stepsync.utils.toast
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,13 +35,13 @@ class LoginActivity : AppCompatActivity() {
             val username = edit_username.text.toString()
             val password = edit_password.text.toString()
 
-            if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Username and password must not be left empty", Toast.LENGTH_LONG).show()
+            if (edit_username.isNotValid() || edit_password.isNotValid()) {
+                toast("Username and password must not be left empty")
                 return@setOnClickListener
             }
             val app = application as MyApplication
             if(app.username != username || app.password != password){
-                Toast.makeText(this, "Invalid username or password", Toast.LENGTH_LONG).show()
+                toast("Invalid username or password")
                 return@setOnClickListener
             }
 

@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.stepsync.data.Developer
 import com.android.stepsync.helper.DeveloperCustomListViewAdapter
+import com.android.stepsync.utils.toast
 
 class DeveloperActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,11 +26,10 @@ class DeveloperActivity : AppCompatActivity() {
             this,
             developerList,
             onClick = { developer ->
-                Toast.makeText(this, "${developer.firstname} was clicked", Toast.LENGTH_LONG).show()
+                toast("${developer.firstname} was clicked")
             },
             onLongClick = { developer ->
-                Toast.makeText(this, "${developer.firstname} was long clicked", Toast.LENGTH_LONG)
-                    .show()
+                toast("${developer.firstname} was long clicked")
             })
 
 
