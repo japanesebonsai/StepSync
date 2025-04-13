@@ -7,8 +7,4 @@ class MyApplication : Application() {
     var email : String = "admin"
     var password : String = "admin"
 
-    override fun onCreate(){
-        super.onCreate()
-    }
-
 }

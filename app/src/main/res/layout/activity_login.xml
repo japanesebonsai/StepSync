@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,38 +16,32 @@
         android:layout_marginBottom="60sp"/>
 
 
-    <LinearLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:hint="Username"
+        app:hintTextAppearance="@font/f42dotsans_regular"
         android:layout_marginBottom="24sp">
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_username"
             android:layout_width="match_parent"
-            android:layout_height="40sp"
-            android:paddingHorizontal="16sp"
-            android:hint="Username"
-            android:fontFamily="@font/f42dotsans_regular"
-            android:background="@drawable/placeholder2_drawable"
-            android:elevation="2sp"/>
+            android:layout_height="wrap_content"
+            android:inputType="text"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    </LinearLayout>
-
-    <LinearLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="40sp">
-        <EditText
+        android:hint="Password"
+        app:hintTextAppearance="@font/f42dotsans_regular"
+        app:passwordToggleEnabled="true"
+        android:layout_marginBottom="30sp">
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_password"
             android:layout_width="match_parent"
-            android:layout_height="40sp"
-            android:paddingHorizontal="16sp"
-            android:hint="Password"
-            android:fontFamily="@font/f42dotsans_regular"
-            android:background="@drawable/placeholder2_drawable"
-            android:elevation="2sp"/>
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/button_login"

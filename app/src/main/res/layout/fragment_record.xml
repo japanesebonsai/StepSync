@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_drawable">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="10sp"
+        android:layout_gravity="center"
+        android:paddingVertical="25sp"
+        android:background="@drawable/placeholder_drawable"
+        android:elevation="4sp">
+
+        <TextView
+            android:fontFamily="@font/f42dotsans_regular"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TIME"
+            android:textColor="#0f0f0f"
+            android:elevation="4sp"
+            android:layout_gravity="center"
+            android:textSize="16sp" />
+
+        <TextView
+            android:fontFamily="@font/f42dotsans_extrabold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0:00:00"
+            android:textColor="#0f0f0f"
+            android:elevation="4sp"
+            android:layout_gravity="center"
+            android:textSize="40sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="10sp"
+        android:layout_gravity="center"
+        android:paddingVertical="25sp"
+        android:background="@drawable/placeholder_drawable"
+        android:elevation="4sp">
+
+        <TextView
+            android:fontFamily="@font/f42dotsans_regular"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AVG SPEED"
+            android:textColor="#0f0f0f"
+            android:elevation="4sp"
+            android:layout_gravity="center"
+            android:textSize="16sp" />
+
+        <TextView
+            android:fontFamily="@font/f42dotsans_extrabold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.0"
+            android:textColor="#0f0f0f"
+            android:elevation="4sp"
+            android:layout_gravity="center"
+            android:textSize="80sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="10sp"
+        android:layout_gravity="center"
+        android:paddingVertical="25sp"
+        android:background="@drawable/placeholder_drawable"
+        android:elevation="4sp">
+
+        <TextView
+            android:fontFamily="@font/f42dotsans_regular"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DISTANCE"
+            android:textColor="#0f0f0f"
+            android:elevation="4sp"
+            android:layout_gravity="center"
+            android:textSize="16sp" />
+
+        <TextView
+            android:fontFamily="@font/f42dotsans_extrabold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.0"
+            android:textColor="#0f0f0f"
+            android:elevation="4sp"
+            android:layout_gravity="center"
+            android:textSize="40sp" />
+
+        <TextView
+            android:fontFamily="@font/f42dotsans_regular"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="KM"
+            android:textColor="#0f0f0f"
+            android:elevation="4sp"
+            android:layout_gravity="center"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <Space
+        android:layout_width="0sp"
+        android:layout_height="0sp"
+        android:layout_weight="1" />
+
+
+</LinearLayout>

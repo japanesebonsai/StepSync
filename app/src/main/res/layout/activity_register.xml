@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,90 +18,59 @@
         android:textSize="20sp"
         android:layout_marginVertical="40sp"/>
 
-
-    <LinearLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="20sp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="Username"
-            android:fontFamily="@font/f42dotsans_bold"
-            android:textColor="#0f0f0f"/>
-
-        <EditText
+        android:hint="Username"
+        app:hintTextAppearance="@font/f42dotsans_regular"
+        android:layout_marginBottom="30sp">
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_username"
             android:layout_width="match_parent"
-            android:layout_height="40sp"
-            android:paddingHorizontal="16sp"
-            android:background="@drawable/placeholder2_drawable" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:inputType="text"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="20sp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="Email"
-            android:fontFamily="@font/f42dotsans_bold"
-            android:textColor="#0f0f0f"/>
-
-        <EditText
+        android:hint="Email"
+        app:hintTextAppearance="@font/f42dotsans_regular"
+        android:layout_marginBottom="30sp">
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_email"
             android:layout_width="match_parent"
-            android:layout_height="40sp"
-            android:paddingHorizontal="16sp"
-            android:background="@drawable/placeholder2_drawable" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:inputType="text"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="20sp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="Password"
-            android:fontFamily="@font/f42dotsans_bold"
-            android:textColor="#0f0f0f" />
-        <EditText
+        android:hint="Password"
+        app:hintTextAppearance="@font/f42dotsans_regular"
+        app:passwordToggleEnabled="true"
+        android:layout_marginBottom="30sp">
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_password"
             android:layout_width="match_parent"
-            android:layout_height="40sp"
-            android:paddingHorizontal="16sp"
-            android:background="@drawable/placeholder2_drawable"/>
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="20sp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="Confirm Password"
-            android:fontFamily="@font/f42dotsans_bold"
-            android:textColor="#0f0f0f"/>
-
-        <EditText
+        android:hint="Confirm Password"
+        app:hintTextAppearance="@font/f42dotsans_regular"
+        app:passwordToggleEnabled="true"
+        android:layout_marginBottom="30sp">
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_confirmpassword"
             android:layout_width="match_parent"
-            android:layout_height="40sp"
-            android:paddingHorizontal="16sp"
-            android:background="@drawable/placeholder2_drawable"/>
-
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/button_register"

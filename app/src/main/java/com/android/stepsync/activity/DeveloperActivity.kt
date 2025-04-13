@@ -1,11 +1,11 @@
-package com.android.stepsync
+package com.android.stepsync.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ListView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.android.stepsync.R
 import com.android.stepsync.data.Developer
 import com.android.stepsync.helper.DeveloperCustomListViewAdapter
 import com.android.stepsync.utils.toast
@@ -18,8 +18,12 @@ class DeveloperActivity : AppCompatActivity() {
         val listview_developer = findViewById<ListView>(R.id.listview_developer)
 
         val developerList = listOf(
-            Developer("John Jacob", "Matildo", "Muli", "johnjacob.muli@cit.edu", R.drawable.user_icon),
-            Developer("Primo Christian", "", "Montejo", "primochristian.montejo@cit.edu", R.drawable.user_icon)
+            Developer("John Jacob", "Matildo", "Muli", "johnjacob.muli@cit.edu",
+                R.drawable.user_icon
+            ),
+            Developer("Primo Christian", "", "Montejo", "primochristian.montejo@cit.edu",
+                R.drawable.user_icon
+            )
         )
 
         val adapter = DeveloperCustomListViewAdapter(

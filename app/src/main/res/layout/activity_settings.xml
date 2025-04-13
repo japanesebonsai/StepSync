@@ -217,18 +217,53 @@
 
     </LinearLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4sp"
+        android:layout_marginLeft="20sp"
+        android:layout_marginRight="20sp"
+        android:fontFamily="@font/f42dotsans_bold"
+        android:text="Logout"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40sp"
+        android:padding="12sp"
+        android:orientation="vertical"
+        android:layout_marginBottom="40sp"
+        android:layout_marginLeft="20sp"
+        android:layout_marginRight="20sp"
+        android:background="@drawable/placeholder_drawable"
+        android:elevation="4sp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="16sp"
+                android:layout_height="16sp"
+                android:layout_gravity="center"
+                android:layout_marginRight="12sp"
+                android:src="@drawable/signout_icon"/>
+
+            <TextView
+                android:id="@+id/text_signout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:textColor="#ff0000"
+                android:fontFamily="@font/f42dotsans_bold"
+                android:textSize="12sp"
+                android:text="Log Out"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
     <Space
         android:layout_width="0sp"
         android:layout_height="0sp"
         android:layout_weight="1" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="#f2f2f2"
-        app:menu="@menu/menu_navigation"/>
-
-
 </LinearLayout>

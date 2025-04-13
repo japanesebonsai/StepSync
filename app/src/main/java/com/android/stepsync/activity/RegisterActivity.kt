@@ -1,4 +1,4 @@
-package com.android.stepsync
+package com.android.stepsync.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,10 +6,12 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.android.stepsync.R
 import com.android.stepsync.app.MyApplication
+import com.android.stepsync.utils.isNotValid
 import com.android.stepsync.utils.toast
+import com.google.android.material.textfield.TextInputEditText
 
 class RegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,8 +20,8 @@ class RegisterActivity : AppCompatActivity() {
 
         val edit_username = findViewById<EditText>(R.id.edit_username)
         val edit_email = findViewById<EditText>(R.id.edit_email)
-        val edit_password = findViewById<EditText>(R.id.edit_password)
-        val edit_confirmpassword = findViewById<EditText>(R.id.edit_confirmpassword)
+        val edit_password = findViewById<TextInputEditText>(R.id.edit_password)
+        val edit_confirmpassword = findViewById<TextInputEditText>(R.id.edit_confirmpassword)
         val button_register = findViewById<Button>(R.id.button_register)
         val text_login = findViewById<TextView>(R.id.text_login)
 
@@ -29,7 +31,7 @@ class RegisterActivity : AppCompatActivity() {
             val password = edit_password.text
             val confirmpassword = edit_confirmpassword.text
 
-            if(username.isNullOrEmpty() || password.isNullOrEmpty() || confirmpassword.isNullOrEmpty() || email.isNullOrEmpty()){
+            if(edit_username.isNotValid() || edit_password.isNotValid() || edit_confirmpassword.isNotValid()|| edit_email.isNotValid()){
                 toast("Fields must not be left blank")
                 return@setOnClickListener
             } else {
