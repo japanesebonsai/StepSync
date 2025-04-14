@@ -19,10 +19,10 @@ class DeveloperActivity : AppCompatActivity() {
 
         val developerList = listOf(
             Developer("John Jacob", "Matildo", "Muli", "johnjacob.muli@cit.edu",
-                R.drawable.user_icon
+                R.drawable.profile2_icon
             ),
             Developer("Primo Christian", "", "Montejo", "primochristian.montejo@cit.edu",
-                R.drawable.user_icon
+                R.drawable.profile1_icon
             )
         )
 

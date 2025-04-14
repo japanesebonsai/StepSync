@@ -35,13 +35,20 @@
         android:hint="Password"
         app:hintTextAppearance="@font/f42dotsans_regular"
         app:passwordToggleEnabled="true"
-        android:layout_marginBottom="30sp">
+        android:layout_marginBottom="20sp">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"/>
     </com.google.android.material.textfield.TextInputLayout>
+
+    <CheckBox
+        android:id="@+id/checkbox_remember"
+        android:layout_width="130dp"
+        android:layout_height="20dp"
+        android:layout_gravity="right"
+        android:text="Remember Me"/>
 
     <Button
         android:id="@+id/button_login"
@@ -52,7 +59,7 @@
         android:fontFamily="@font/f42dotsans_extrabold"
         android:text="Login"
         android:clickable="true"
-        android:backgroundTint="#00adef"
+        android:backgroundTint="#5e17eb"
         android:textColor="@android:color/white"
         android:elevation="4sp"/>
 

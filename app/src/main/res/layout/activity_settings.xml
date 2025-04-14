@@ -24,55 +24,15 @@
             android:textAlignment="center" />
     </LinearLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4sp"
-        android:layout_marginLeft="20sp"
-        android:layout_marginRight="20sp"
-        android:fontFamily="@font/f42dotsans_bold"
-        android:text="Account Settings"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20sp"
-        android:layout_marginRight="20sp"
+    <Button
+        android:id="@+id/button_back"
+        android:layout_width="30sp"
+        android:layout_height="30sp"
         android:padding="12sp"
-        android:orientation="vertical"
-        android:layout_marginBottom="40sp"
-        android:elevation="4sp"
-        android:background="@drawable/placeholder_drawable">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fontFamily="@font/f42dotsans_extrabold"
-                android:text="Change Email"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fontFamily="@font/f42dotsans_extrabold"
-                android:text="Change Password"/>
-        </LinearLayout>
-
-    </LinearLayout>
-
+        android:layout_marginBottom="20sp"
+        android:layout_marginLeft="20sp"
+        android:layout_marginRight="20sp"
+        android:background="@drawable/back_icon" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -104,52 +64,26 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="@font/f42dotsans_bold"
-                android:text="Daily Goal"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="5000 Steps"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fontFamily="@font/f42dotsans_bold"
-                android:text="Sport"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Running"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fontFamily="@font/f42dotsans_bold"
                 android:text="Units of Measure"/>
 
-            <TextView
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Kilometers"/>
+                style="@style/Widget.Material3.TextInputLayout.*.ExposedDropdownMenu">
+
+                <AutoCompleteTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                app:simpleItems="@array/unitofmeasure_items" />
+
+        </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="5dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -161,13 +95,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="@font/f42dotsans_bold"
-                android:text="Notifications"/>
+                android:text="Battery Saver"/>
 
-            <TextView
+            <CheckBox
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Enabled"/>
+                android:layout_height="20dp"
+                android:layout_weight="4"
+                android:fontFamily="@font/f42dotsans_regular" />
 
         </LinearLayout>
 

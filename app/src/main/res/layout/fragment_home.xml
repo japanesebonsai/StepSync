@@ -6,66 +6,109 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient_drawable">
 
-
-    <TextView
-        android:fontFamily="@font/f42dotsans_extrabold"
-        android:layout_marginTop="80sp"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="00 / 00"
-        android:textColor="#0f0f0f"
-        android:elevation="4sp"
         android:layout_gravity="center"
-        android:textSize="60sp"
-        android:layout_marginBottom="50sp"/>
+        android:orientation="horizontal"
+        android:padding="20sp"
+        android:background="@drawable/header_drawable"
+        android:layout_marginBottom="20sp"
+        android:elevation="4sp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Home"
+            android:textSize="16sp"
+            android:fontFamily="@font/f42dotsans_extrabold"
+            android:textAlignment="center" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/button_settings"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/settings_icon"
+        android:layout_gravity="right"
+        android:layout_marginRight="40dp"/>
 
     <TextView
-        android:text="Calories Lost: 00/00"
-        android:textColor="#0f0f0f"
-        android:textSize="16sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="20dp"
         android:fontFamily="@font/f42dotsans_bold"
-        android:textAlignment="center"
-        android:layout_margin="10sp"
-        android:layout_gravity="center"
-        android:paddingVertical="25sp"
-        android:layout_width="280sp"
-        android:layout_height="70sp"
-        android:background="@drawable/placeholder_drawable"
-        android:elevation="4sp"/>
+        android:textSize="32sp"
+        android:text="This Week"/>
 
-    <TextView
-        android:textColor="#0f0f0f"
-        android:fontFamily="@font/f42dotsans_bold"
-        android:textStyle="bold"
-        android:text="Number of Steps: 00/00"
-        android:textSize="16sp"
-        android:textAlignment="center"
-        android:layout_margin="10sp"
-        android:layout_gravity="center"
-        android:paddingVertical="25sp"
-        android:layout_width="280sp"
-        android:layout_height="70sp"
-        android:background="@drawable/placeholder_drawable"
-        android:elevation="4sp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="20dp">
 
-    <TextView
-        android:fontFamily="@font/f42dotsans_bold"
-        android:textColor="#0f0f0f"
-        android:text="Carbon Saved: 00/00"
-        android:textSize="16sp"
-        android:textAlignment="center"
-        android:layout_margin="10sp"
-        android:layout_gravity="center"
-        android:paddingVertical="25sp"
-        android:layout_width="280sp"
-        android:layout_height="70sp"
-        android:background="@drawable/placeholder_drawable"
-        android:elevation="4sp"/>
+        <LinearLayout
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/f42dotsans_regular"
+                android:textSize="16sp"
+                android:text="Activities"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/f42dotsans_bold"
+                android:textSize="24sp"
+                android:text="0"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/f42dotsans_regular"
+                android:textSize="16sp"
+                android:text="Time"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/f42dotsans_bold"
+                android:textSize="24sp"
+                android:text="0h 0m"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/f42dotsans_regular"
+                android:textSize="16sp"
+                android:text="Distance"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/f42dotsans_bold"
+                android:textSize="24sp"
+                android:text="0.00 km"/>
+        </LinearLayout>
+
+    </LinearLayout>
 
     <Space
         android:layout_width="0sp"
         android:layout_height="0sp"
         android:layout_weight="1" />
-
 
 </LinearLayout>

@@ -82,4 +82,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation ("com.google.android.material:material:1.9.0")
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
 }

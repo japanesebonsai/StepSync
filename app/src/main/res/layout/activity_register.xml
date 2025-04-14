@@ -81,7 +81,7 @@
         android:text="Register"
         android:fontFamily="@font/f42dotsans_bold"
         android:textStyle="bold"
-        android:backgroundTint="#00adef"
+        android:backgroundTint="#5e17eb"
         android:textColor="@android:color/white"/>
 
     <TextView

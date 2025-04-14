@@ -8,7 +8,7 @@
 
         <item
             android:id="@+id/navigation_record"
-            android:icon="@drawable/settings_icon"
+            android:icon="@drawable/record_icon"
             android:title="Record" />
 
         <item
