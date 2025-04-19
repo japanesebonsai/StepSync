@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "811990536763",
+    "firebase_url": "https://stepsync-d21c1-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "stepsync-d21c1",
+    "storage_bucket": "stepsync-d21c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:811990536763:android:e398cf627dbb809a7c821e",
+        "android_client_info": {
+          "package_name": "com.android.stepsync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2xDANyqRZhanlmdR2pv3a_XNPj5qAh-0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

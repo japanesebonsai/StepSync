@@ -57,28 +57,30 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="@font/f42dotsans_bold"
                 android:text="Units of Measure"/>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                style="@style/Widget.Material3.TextInputLayout.*.ExposedDropdownMenu">
+                android:layout_weight="1"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
                 <AutoCompleteTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none"
-                app:simpleItems="@array/unitofmeasure_items" />
-
-        </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:inputType="none"
+                    app:simpleItems="@array/unitofmeasure_items" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
+
 
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
