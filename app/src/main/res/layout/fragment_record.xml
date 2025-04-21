@@ -47,6 +47,7 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/text_time"
             android:fontFamily="@font/f42dotsans_extrabold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -80,10 +81,11 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/text_avgspeed"
             android:fontFamily="@font/f42dotsans_extrabold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0.0"
+            android:text="0.00"
             android:textColor="#0f0f0f"
             android:elevation="4sp"
             android:layout_gravity="center"
@@ -112,10 +114,11 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/text_distance"
             android:fontFamily="@font/f42dotsans_extrabold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0.0"
+            android:text="0.00"
             android:textColor="#0f0f0f"
             android:elevation="4sp"
             android:layout_gravity="center"
