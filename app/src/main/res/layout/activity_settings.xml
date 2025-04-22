@@ -148,6 +148,8 @@
         android:elevation="4sp">
 
         <LinearLayout
+            android:id="@+id/layout_logout"
+            android:clickable="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
@@ -159,11 +161,9 @@
                 android:src="@drawable/signout_icon"/>
 
             <TextView
-                android:id="@+id/text_signout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:clickable="true"
                 android:textColor="#ff0000"
                 android:fontFamily="@font/f42dotsans_bold"
                 android:textSize="12sp"

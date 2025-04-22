@@ -19,11 +19,11 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Username"
+        android:hint="Email"
         app:hintTextAppearance="@font/f42dotsans_regular"
         android:layout_marginBottom="24sp">
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_username"
+            android:id="@+id/edit_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"/>
@@ -44,7 +44,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <CheckBox
-        android:id="@+id/checkbox_remember"
+        android:id="@+id/checkbox_rememberme"
         android:layout_width="130dp"
         android:layout_height="20dp"
         android:layout_gravity="right"

@@ -23,7 +23,8 @@
         android:layout_height="wrap_content"
         android:hint="Username"
         app:hintTextAppearance="@font/f42dotsans_regular"
-        android:layout_marginBottom="30sp">
+        android:layout_marginBottom="30sp"
+        android:id="@+id/layout_username">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_username"
             android:layout_width="match_parent"
@@ -36,7 +37,8 @@
         android:layout_height="wrap_content"
         android:hint="Email"
         app:hintTextAppearance="@font/f42dotsans_regular"
-        android:layout_marginBottom="30sp">
+        android:layout_marginBottom="30sp"
+        android:id="@+id/layout_email">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_email"
             android:layout_width="match_parent"
@@ -50,7 +52,8 @@
         android:hint="Password"
         app:hintTextAppearance="@font/f42dotsans_regular"
         app:passwordToggleEnabled="true"
-        android:layout_marginBottom="30sp">
+        android:layout_marginBottom="30sp"
+        android:id="@+id/layout_password">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_password"
             android:layout_width="match_parent"
@@ -64,7 +67,8 @@
         android:hint="Confirm Password"
         app:hintTextAppearance="@font/f42dotsans_regular"
         app:passwordToggleEnabled="true"
-        android:layout_marginBottom="30sp">
+        android:layout_marginBottom="30sp"
+        android:id="@+id/layout_confirmpassword">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_confirmpassword"
             android:layout_width="match_parent"

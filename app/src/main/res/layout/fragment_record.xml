@@ -71,7 +71,6 @@
 
         <TextView
             android:fontFamily="@font/f42dotsans_regular"
-
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="AVG SPEED"

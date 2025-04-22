@@ -1,17 +1,18 @@
 package com.android.stepsync.app
 
 import android.app.Application
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
 class MyApplication : Application() {
-    var username : String = "admin"
-    var email : String = "admin"
-    var password : String = "admin"
+    lateinit var firebaseAuth: FirebaseAuth
     lateinit var database: FirebaseDatabase
-    lateinit var auth : FirebaseAuth
 
     override fun onCreate() {
         super.onCreate()
+        FirebaseApp.initializeApp(this)
+        firebaseAuth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance("https://stepsync-d21c1-default-rtdb.asia-southeast1.firebasedatabase.app/")
     }
 }

@@ -59,6 +59,7 @@
                 android:textSize="16sp"
                 android:text="Activities"/>
             <TextView
+                android:id="@+id/text_activities"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/f42dotsans_bold"
@@ -78,6 +79,7 @@
                 android:textSize="16sp"
                 android:text="Time"/>
             <TextView
+                android:id="@+id/text_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/f42dotsans_bold"
@@ -97,6 +99,7 @@
                 android:textSize="16sp"
                 android:text="Distance"/>
             <TextView
+                android:id="@+id/text_distance"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/f42dotsans_bold"
@@ -104,7 +107,10 @@
                 android:text="0.00 km"/>
         </LinearLayout>
 
+
     </LinearLayout>
+
+
 
     <Space
         android:layout_width="0sp"

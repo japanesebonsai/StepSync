@@ -1,8 +1,4 @@
-package com.android.stepsync.data
-
+// ActivityRecord.kt
 data class ActivityRecord(
-    val duration: Long,
-    val steps: Int,
-    val distance: Float,
-    val avgSpeed: Float
+    var dog:String
 )
