@@ -9,7 +9,7 @@ import com.android.stepsync.R
 
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
-
+    //TODO load weekly recorded activities and add statistics for user engagement
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

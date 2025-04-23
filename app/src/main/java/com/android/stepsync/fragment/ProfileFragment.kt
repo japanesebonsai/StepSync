@@ -1,11 +1,15 @@
 package com.android.stepsync.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.android.stepsync.R
 import com.android.stepsync.app.MyApplication
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -14,11 +18,13 @@ import java.util.Date
 import java.util.Locale
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
+    //TODO load recyclerview (to get data from recorded activities on the database)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val text_username = view.findViewById<TextView>(R.id.text_username)
         val text_created_at = view.findViewById<TextView>(R.id.text_created_at)
+        val button_edit = view.findViewById<Button>(R.id.button_edit)
 
         val app = activity?.application as MyApplication
         val userId = app.firebaseAuth.currentUser?.uid ?: return
@@ -37,5 +43,9 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
                 }
             })
+
+        button_edit.setOnClickListener {
+            //TODO implement using Full-Screen Dialog(DialogFragment)
+        }
     }
 }

@@ -21,6 +21,8 @@ import com.android.stepsync.helper.StepTrackingService
 import java.util.Locale
 
 class RecordFragment : Fragment(R.layout.fragment_record) {
+    //TODO record activities in database using map (include activity created date)
+    //TODO pause activity
     private val TAG = "RecordFragment"
 
     private lateinit var timeTextView: TextView

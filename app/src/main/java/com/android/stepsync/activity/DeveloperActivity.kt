@@ -42,7 +42,7 @@ class DeveloperActivity : AppCompatActivity() {
         val button_back = findViewById<Button>(R.id.button_back)
 
         button_back.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+            finish()
         }
     }
 }
