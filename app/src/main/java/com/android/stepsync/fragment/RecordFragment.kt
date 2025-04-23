@@ -96,18 +96,35 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     }
 
     private fun checkAndRequestPermissions() {
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACTIVITY_RECOGNITION
-            ) != PackageManager.PERMISSION_GRANTED) {
+        val permissionsToRequest = mutableListOf<String>()
 
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACTIVITY_RECOGNITION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.FOREGROUND_SERVICE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
             ActivityCompat.requestPermissions(
                 requireActivity(),
-                arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
+                permissionsToRequest.toTypedArray(),
                 PERMISSION_REQUEST_ACTIVITY_RECOGNITION
             )
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
