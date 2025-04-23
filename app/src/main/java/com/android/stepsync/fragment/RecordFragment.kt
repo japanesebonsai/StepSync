@@ -1,34 +1,21 @@
 package com.android.stepsync.activity
 
-
 import android.Manifest
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.ActivityManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.location.Location
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.IBinder
-import android.os.Looper
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.helper.StepTrackingService
 import java.util.Locale
@@ -224,6 +211,5 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
 
     private fun updateSpeedDisplay(speedInKmh: Float) {
         avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f", speedInKmh)
-
     }
 }

@@ -238,7 +238,7 @@ class StepTrackingService : Service(), SensorEventListener {
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("StepSync")
             .setContentText("Distance: ${String.format("%.2f", totalDistanceKm)} km")
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_notif_icon)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
 
