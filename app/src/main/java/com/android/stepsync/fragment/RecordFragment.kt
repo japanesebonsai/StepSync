@@ -30,157 +30,200 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import com.android.stepsync.R
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
+import com.android.stepsync.helper.StepTrackingService
+import java.util.Locale
 
+class RecordFragment : Fragment(R.layout.fragment_record) {
+    private val TAG = "RecordFragment"
 
-class RecordFragment : Fragment(), SensorEventListener {
+    private lateinit var timeTextView: TextView
+    private lateinit var avgSpeedTextView: TextView
+    private lateinit var distanceTextView: TextView
+    private lateinit var recordButton: Button
 
-    private lateinit var textTime: TextView
-    private lateinit var textAvgSpeed: TextView
-    private lateinit var textDistance: TextView
-    private lateinit var buttonRecord: Button
+    private var isTracking = false
+    private val PERMISSION_REQUEST_ACTIVITY_RECOGNITION = 1001
 
-    private val sensorManager by lazy {
-        requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    }
-    private val stepSensor: Sensor? by lazy {
-        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-    }
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var locationCallback: LocationCallback? = null
-
-    private var isRecording = false
-    private var initialStepCount: Float = -1f
-    private var totalDistance: Float = 0f  // meters
-    private var previousLocation: Location? = null
-    private var startTime: Long = 0L
-    private val handler = Handler(Looper.getMainLooper())
-    private val timerRunnable = object : Runnable {
-        override fun run() {
-            val elapsed = System.currentTimeMillis() - startTime
-            textTime.text = formatElapsedTime(elapsed)
-            updateAvgSpeed(elapsed)
-            handler.postDelayed(this, 1000)
+    private val trackingUpdateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                StepTrackingService.ACTION_TIME_UPDATE -> {
+                    val timeInSeconds = intent.getLongExtra(StepTrackingService.EXTRA_TIME, 0)
+                    updateTimeDisplay(timeInSeconds)
+                }
+                StepTrackingService.ACTION_DISTANCE_UPDATE -> {
+                    val distance = intent.getFloatExtra(StepTrackingService.EXTRA_DISTANCE, 0f)
+                    updateDistanceDisplay(distance)
+                }
+                StepTrackingService.ACTION_SPEED_UPDATE -> {
+                    val speed = intent.getFloatExtra(StepTrackingService.EXTRA_SPEED, 0f)
+                    updateSpeedDisplay(speed)
+                }
+                StepTrackingService.ACTION_TRACKING_STATUS -> {
+                    isTracking = intent.getBooleanExtra(StepTrackingService.EXTRA_IS_TRACKING, false)
+                    updateUI()
+                }
+            }
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_record, container, false)
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        textTime = view.findViewById(R.id.text_time)
-        textAvgSpeed = view.findViewById(R.id.text_avgspeed)
-        textDistance = view.findViewById(R.id.text_distance)
-        buttonRecord = view.findViewById(R.id.button_record)
+        timeTextView = view.findViewById(R.id.text_time)
+        avgSpeedTextView = view.findViewById(R.id.text_avgspeed)
+        distanceTextView = view.findViewById(R.id.text_distance)
+        recordButton = view.findViewById(R.id.button_record)
 
-        fusedLocationClient =
-            LocationServices.getFusedLocationProviderClient(requireContext())
+        recordButton.setOnClickListener {
+            if (isTracking) {
+                stopTracking()
+            } else {
+                startTracking()
+            }
+        }
 
-        buttonRecord.setOnClickListener {
-            if (isRecording) stopTracking() else startTracking()
+        checkTrackingStatus()
+        checkAndRequestPermissions()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val intentFilter = IntentFilter().apply {
+            addAction(StepTrackingService.ACTION_TIME_UPDATE)
+            addAction(StepTrackingService.ACTION_DISTANCE_UPDATE)
+            addAction(StepTrackingService.ACTION_SPEED_UPDATE)
+            addAction(StepTrackingService.ACTION_TRACKING_STATUS)
+        }
+        LocalBroadcastManager.getInstance(requireContext())
+            .registerReceiver(trackingUpdateReceiver, intentFilter)
+
+        checkTrackingStatus()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        LocalBroadcastManager.getInstance(requireContext())
+            .unregisterReceiver(trackingUpdateReceiver)
+    }
+
+    private fun checkAndRequestPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACTIVITY_RECOGNITION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.FOREGROUND_SERVICE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                permissionsToRequest.toTypedArray(),
+                PERMISSION_REQUEST_ACTIVITY_RECOGNITION
+            )
+        }
+    }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            PERMISSION_REQUEST_ACTIVITY_RECOGNITION -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "Activity recognition permission granted")
+                } else {
+                    Log.d(TAG, "Activity recognition permission denied")
+                }
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 
     private fun startTracking() {
-        isRecording = true
-        buttonRecord.text = "STOP"
-        initialStepCount = -1f
-        totalDistance = 0f
-        previousLocation = null
-        startTime = System.currentTimeMillis()
-        handler.post(timerRunnable)
-        stepSensor?.let { sensor ->
-            sensorManager.registerListener(
-                this, sensor, SensorManager.SENSOR_DELAY_NORMAL
-            )
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED) {
+
+            val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
+                action = StepTrackingService.ACTION_START_TRACKING
+            }
+            ContextCompat.startForegroundService(requireContext(), serviceIntent)
+            isTracking = true
+            updateUI()
+        } else {
+            checkAndRequestPermissions()
         }
-        startLocationUpdates()
     }
 
     private fun stopTracking() {
-        isRecording = false
-        buttonRecord.text = "START"
-        handler.removeCallbacks(timerRunnable)
-        sensorManager.unregisterListener(this)
-        stopLocationUpdates()
+        val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
+            action = StepTrackingService.ACTION_STOP_TRACKING
+        }
+        requireContext().startService(serviceIntent)
+        isTracking = false
+        updateUI()
     }
 
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (isRecording && event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
-            val totalSteps = event.values[0]
-            if (initialStepCount < 0) initialStepCount = totalSteps
-            // You can use stepsInSession = totalSteps - initialStepCount if needed
-        }
-    }
+    private fun checkTrackingStatus() {
+        isTracking = isServiceRunning(StepTrackingService::class.java)
+        updateUI()
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-
-    private fun startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1
-            )
-            return
-        }
-        // Use new LocationRequest.Builder API
-        val request = LocationRequest.Builder(5000L)
-            .setMinUpdateIntervalMillis(2000L)
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .build()
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let { loc ->
-                    if (isRecording) {
-                        previousLocation?.let { prev ->
-                            val delta = prev.distanceTo(loc)
-                            totalDistance += delta
-                            textDistance.text = String.format(
-                                "%.2f", totalDistance / 1000f
-                            )
-                        }
-                        previousLocation = loc
-                    }
-                }
+        if (isTracking) {
+            val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
+                action = StepTrackingService.ACTION_REQUEST_STATUS
             }
-        }
-        fusedLocationClient.requestLocationUpdates(
-            request, locationCallback!!, Looper.getMainLooper()
-        )
-    }
-
-    private fun stopLocationUpdates() {
-        locationCallback?.let {
-            fusedLocationClient.removeLocationUpdates(it)
+            requireContext().startService(serviceIntent)
         }
     }
 
-    private fun updateAvgSpeed(elapsedMillis: Long) {
-        if (isRecording && elapsedMillis > 0) {
-            // m/s to km/h: *3.6
-            val speedMs = totalDistance / (elapsedMillis / 1000f)
-            val speedKmh = speedMs * 3.6f
-            textAvgSpeed.text = String.format("%.2f", speedKmh)
+    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return manager.getRunningServices(Integer.MAX_VALUE)
+            .any { it.service.className == serviceClass.name }
+    }
+
+    private fun updateUI() {
+        recordButton.text = if (isTracking) "STOP" else "START"
+
+        if (!isTracking) {
+            updateTimeDisplay(0)
+            updateDistanceDisplay(0f)
+            updateSpeedDisplay(0f)
         }
     }
 
-    private fun formatElapsedTime(elapsedMillis: Long): String {
-        val hours = elapsedMillis / 3600000
-        val minutes = (elapsedMillis % 3600000) / 60000
-        val seconds = (elapsedMillis % 60000) / 1000
-        return String.format("%d:%02d:%02d", hours, minutes, seconds)
+    private fun updateTimeDisplay(timeInSeconds: Long) {
+        val hours = timeInSeconds / 3600
+        val minutes = (timeInSeconds % 3600) / 60
+        val seconds = timeInSeconds % 60
+
+        timeTextView.text = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
+    }
+
+    private fun updateDistanceDisplay(distanceInKm: Float) {
+        distanceTextView.text = String.format(Locale.getDefault(), "%.2f", distanceInKm)
+    }
+
+    private fun updateSpeedDisplay(speedInKmh: Float) {
+        avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f", speedInKmh)
+
     }
 }
