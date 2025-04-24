@@ -1,4 +1,4 @@
-package com.android.stepsync.activity
+package com.android.stepsync.fragment
 
 import android.content.Intent
 import android.os.Bundle
