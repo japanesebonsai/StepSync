@@ -43,8 +43,8 @@ class StepTrackingService : Service(), SensorEventListener {
         const val EXTRA_SPEED = "extra_speed"
         const val EXTRA_IS_TRACKING = "extra_is_tracking"
 
-        private const val STEP_LENGTH_METERS = 0.75f  // Average step length
-        private const val UPDATE_INTERVAL_MS = 1000L  // Update UI every second
+        private const val STEP_LENGTH_METERS = 0.65f
+        private const val UPDATE_INTERVAL_MS = 1000L
     }
 
     private var isTracking = false
@@ -54,6 +54,10 @@ class StepTrackingService : Service(), SensorEventListener {
     private var currentSteps: Int = 0
     private var totalDistanceKm: Float = 0f
     private var currentSpeedKmh: Float = 0f
+    
+    // FOR DEBUGGING
+    private val debugMode = false // CHANGE TO TRUE TO GENERATE VIRTUAL STEPS
+    private var debugStepsAdded = 0
 
     private lateinit var sensorManager: SensorManager
     private var stepSensor: Sensor? = null
@@ -63,9 +67,25 @@ class StepTrackingService : Service(), SensorEventListener {
         override fun run() {
             if (isTracking) {
                 updateTracking()
+                if (debugMode) {
+                    addDebugSteps()
+                }
                 handler.postDelayed(this, UPDATE_INTERVAL_MS)
             }
         }
+    }
+
+    private fun addDebugSteps() {
+        val stepsToAdd = (3..5).random()
+        debugStepsAdded += stepsToAdd
+
+        val additionalDistanceMeters = stepsToAdd * STEP_LENGTH_METERS
+        totalDistanceKm += (additionalDistanceMeters / 1000f)
+
+        broadcastDistanceUpdate()
+        broadcastSpeedUpdate()
+        
+        Log.d(TAG, "Added $stepsToAdd debug steps, total: $debugStepsAdded, distance: $totalDistanceKm km")
     }
 
     override fun onCreate() {
@@ -89,7 +109,15 @@ class StepTrackingService : Service(), SensorEventListener {
             Log.d(TAG, "Starting tracking service")
 
             createNotificationChannel()
-            startForeground(NOTIFICATION_ID, createNotification())
+            val notification = createNotification()
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NOTIFICATION_ID, notification, 
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
 
             initialStepCount = -1
             currentSteps = 0
@@ -98,16 +126,13 @@ class StepTrackingService : Service(), SensorEventListener {
             startTimeMillis = System.currentTimeMillis()
             elapsedTimeSeconds = 0
 
-            // Register sensor listener
             stepSensor?.let {
                 sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
             }
 
-            // Set tracking flag and start updates
             isTracking = true
             handler.post(updateRunnable)
 
-            // Broadcast tracking status
             broadcastTrackingStatus()
         }
     }
@@ -192,11 +217,14 @@ class StepTrackingService : Service(), SensorEventListener {
             val additionalSteps = newSteps - currentSteps
             currentSteps = newSteps
 
-            val additionalDistanceMeters = additionalSteps * STEP_LENGTH_METERS
-            totalDistanceKm += (additionalDistanceMeters / 1000f)
+            Log.d(TAG, "Step detected: Additional: $additionalSteps, Total: $currentSteps")
 
             if (additionalSteps > 0) {
+                val additionalDistanceMeters = additionalSteps * STEP_LENGTH_METERS
+                totalDistanceKm += (additionalDistanceMeters / 1000f)
+                Log.d(TAG, "Distance updated: +${additionalDistanceMeters}m, Total: ${totalDistanceKm}km")
                 broadcastDistanceUpdate()
+                broadcastSpeedUpdate()
             }
         }
     }

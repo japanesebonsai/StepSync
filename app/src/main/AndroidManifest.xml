@@ -30,7 +30,7 @@
             android:enabled="true"
             android:exported="false"
             android:stopWithTask="false"
-            android:foregroundServiceType="health" />
+            android:foregroundServiceType="location|health" />
 
         <activity
             android:name=".activity.SettingsActivity"
