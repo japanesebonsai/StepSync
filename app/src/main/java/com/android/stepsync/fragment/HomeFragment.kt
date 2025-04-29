@@ -156,26 +156,35 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             startActivity(intent)
         }
 
+        // DEBUGGING TOOL
+        /*
         buttonSettings.setOnLongClickListener {
             android.util.Log.d(TAG, "Long press on settings button - creating test activity")
             createTestActivity()
             true
         }
+
+         */
         
         buttonSetGoal.setOnClickListener {
             showStepGoalDialog()
         }
-        
+
+        // DEBUGGING TOOL
+        /*
         weeklyActivitiesTextView.setOnClickListener {
             android.util.Log.d(TAG, "Activities TextView clicked - forcing reload of stats")
             loadWeeklyStats()
         }
+         */
         
         stepsCountTextView.setOnLongClickListener {
             showStepGoalDialog()
             true
         }
-        
+
+        // DEBUGGING TOOL
+        /*
         weeklyActivitiesTextView.setOnLongClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("Delete All Activities")
@@ -187,6 +196,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 .show()
             true
         }
+         */
+
         
         updateStepProgress(currentStepCount)
         

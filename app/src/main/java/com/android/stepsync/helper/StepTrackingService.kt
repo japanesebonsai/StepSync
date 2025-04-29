@@ -63,7 +63,7 @@ class StepTrackingService : Service(), SensorEventListener {
     private var stepLengthMeters: Float = DEFAULT_STEP_LENGTH_CM / 100f
     
     // FOR DEBUGGING
-    private val debugMode = true // CHANGE TO TRUE TO GENERATE VIRTUAL STEPS
+    private val debugMode = false // CHANGE TO TRUE TO GENERATE VIRTUAL STEPS
     private var debugStepsAdded = 0
 
     private lateinit var sensorManager: SensorManager

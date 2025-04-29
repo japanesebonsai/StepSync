@@ -47,6 +47,7 @@
             android:layout_marginBottom="12dp"
             android:fontFamily="@font/f42dotsans_bold"
             android:textSize="24sp"
+            android:textColor="@color/text_color"
             android:text="Today's Goal"/>
 
         <androidx.cardview.widget.CardView
@@ -55,60 +56,70 @@
             android:layout_marginHorizontal="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/progress_card_background"
             android:layout_marginBottom="24dp">
             
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:padding="20dp">
                 
-                <!-- Circular Progress Indicator -->
-                <com.google.android.material.progressindicator.CircularProgressIndicator
-                    android:id="@+id/progress_steps"
-                    android:layout_width="wrap_content"
+                <FrameLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    app:indicatorSize="200dp"
-                    app:trackThickness="14dp"
-                    app:indicatorColor="@color/purple_500"
-                    app:trackColor="#E0E0E0"
-                    app:trackCornerRadius="3dp"/>
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="16dp">
                     
-                <!-- Step Count Text -->
-                <TextView
-                    android:id="@+id/text_step_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:fontFamily="@font/f42dotsans_extrabold"
-                    android:textSize="36sp"
-                    android:text="0"/>
+                    <!-- Circular Progress Indicator -->
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/progress_steps"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        app:indicatorSize="220dp"
+                        app:trackThickness="16dp"
+                        app:indicatorColor="@color/primary_color"
+                        app:trackColor="@color/progress_track_color"
+                        app:trackCornerRadius="4dp"/>
+                        
+                    <!-- Step Count Text -->
+                    <TextView
+                        android:id="@+id/text_step_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/f42dotsans_extrabold"
+                        android:textSize="40sp"
+                        android:textColor="@color/primary_color"
+                        android:text="0"/>
+                </FrameLayout>
                     
                 <!-- Goal Percentage Text -->
                 <TextView
                     android:id="@+id/text_goal_percentage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/text_step_count"
-                    android:layout_centerHorizontal="true"
+                    android:layout_gravity="center"
                     android:fontFamily="@font/f42dotsans_regular"
                     android:textSize="16sp"
-                    android:text="0% Complete"/>
+                    android:textColor="@color/card_text"
+                    android:text="0% of goal completed"
+                    android:layout_marginBottom="20dp"/>
                     
                 <!-- Set Goal Button -->
                 <Button
                     android:id="@+id/button_set_goal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/text_goal_percentage"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginTop="20dp"
+                    android:layout_gravity="center"
                     android:text="Set Daily Goal"
-                    android:backgroundTint="@color/purple_500"
+                    android:backgroundTint="@color/primary_color"
                     android:textColor="@android:color/white"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="8dp"/>
-            </RelativeLayout>
+                    android:paddingVertical="8dp"
+                    app:cornerRadius="8dp"/>
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <!-- Current Activity Section -->
@@ -120,6 +131,7 @@
             android:layout_marginBottom="12dp"
             android:fontFamily="@font/f42dotsans_bold"
             android:textSize="24sp"
+            android:textColor="@color/text_color"
             android:text="Current Activity"/>
 
         <androidx.cardview.widget.CardView
@@ -128,6 +140,7 @@
             android:layout_marginHorizontal="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/card_background"
             android:layout_marginBottom="24dp">
 
             <LinearLayout
@@ -142,6 +155,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/f42dotsans_bold"
                     android:textSize="18sp"
+                    android:textColor="@color/card_text"
                     android:text="Status: Not Recording"
                     android:layout_marginBottom="12dp"/>
 
@@ -162,6 +176,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:textColor="@color/card_text"
                             android:text="Time"
                             android:textSize="14sp"/>
 
@@ -171,6 +186,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:textColor="@color/card_text"
                             android:text="0h 0m"
                             android:textSize="20sp"/>
                     </LinearLayout>
@@ -185,6 +201,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:textColor="@color/card_text"
                             android:text="Distance"
                             android:textSize="14sp"/>
 
@@ -194,6 +211,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:textColor="@color/card_text"
                             android:text="0.00 km"
                             android:textSize="20sp"/>
                     </LinearLayout>
@@ -208,6 +226,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:textColor="@color/card_text"
                             android:text="Speed"
                             android:textSize="14sp"/>
 
@@ -218,6 +237,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:gravity="center"
+                            android:textColor="@color/card_text"
                             android:text="0.00 km/h"
                             android:textSize="18sp"/>
                     </LinearLayout>
@@ -232,6 +252,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:textColor="@color/card_text"
                             android:text="Pace"
                             android:textSize="14sp"/>
 
@@ -241,6 +262,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:textColor="@color/card_text"
                             android:text="-"
                             android:textSize="18sp"/>
                     </LinearLayout>
@@ -257,6 +279,7 @@
             android:layout_marginBottom="12dp"
             android:fontFamily="@font/f42dotsans_bold"
             android:textSize="24sp"
+            android:textColor="@color/text_color"
             android:text="This Week"/>
 
         <androidx.cardview.widget.CardView
@@ -265,6 +288,7 @@
             android:layout_marginHorizontal="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/card_background"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -290,6 +314,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/f42dotsans_regular"
                             android:textSize="16sp"
+                            android:textColor="@color/card_text"
                             android:text="Activities"/>
                             
                         <TextView
@@ -298,6 +323,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/f42dotsans_bold"
                             android:textSize="24sp"
+                            android:textColor="@color/card_text"
                             android:text="0"/>
                     </LinearLayout>
 
@@ -313,6 +339,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/f42dotsans_regular"
                             android:textSize="16sp"
+                            android:textColor="@color/card_text"
                             android:text="Time"/>
                             
                         <TextView
@@ -321,6 +348,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/f42dotsans_bold"
                             android:textSize="24sp"
+                            android:textColor="@color/card_text"
                             android:text="0h 0m"/>
                     </LinearLayout>
                 </LinearLayout>
@@ -343,6 +371,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/f42dotsans_regular"
                             android:textSize="16sp"
+                            android:textColor="@color/card_text"
                             android:text="Distance"/>
                             
                         <TextView
@@ -351,6 +380,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/f42dotsans_bold"
                             android:textSize="24sp"
+                            android:textColor="@color/card_text"
                             android:text="0.00 km"/>
                     </LinearLayout>
                     
@@ -366,6 +396,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/f42dotsans_regular"
                             android:textSize="16sp"
+                            android:textColor="@color/card_text"
                             android:text="Avg. Pace"/>
                             
                         <TextView
@@ -374,6 +405,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/f42dotsans_bold"
                             android:textSize="24sp"
+                            android:textColor="@color/card_text"
                             android:text="-"/>
                     </LinearLayout>
                 </LinearLayout>

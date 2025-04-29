@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:background="#ffffff"
+    android:background="@color/card_background"
     android:padding="12dp">
 
     <ImageView
@@ -22,13 +22,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="sample"
-            android:textColor="#0f0f0f"/>
+            android:textColor="@color/card_text"/>
 
         <TextView
             android:id="@+id/textview_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="sample"
-            android:textColor="#0f0f0f"/>
+            android:textColor="@color/card_text"/>
     </LinearLayout>
 </LinearLayout>

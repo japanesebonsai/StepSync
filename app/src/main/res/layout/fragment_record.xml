@@ -37,11 +37,10 @@
 
         <TextView
             android:fontFamily="@font/f42dotsans_regular"
-
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TIME"
-            android:textColor="#0f0f0f"
+            android:textColor="@color/card_text"
             android:elevation="4sp"
             android:layout_gravity="center"
             android:textSize="16sp" />
@@ -52,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0:00:00"
-            android:textColor="#0f0f0f"
+            android:textColor="@color/card_text"
             android:elevation="4sp"
             android:layout_gravity="center"
             android:textSize="40sp" />
@@ -74,7 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="AVG SPEED"
-            android:textColor="#0f0f0f"
+            android:textColor="@color/card_text"
             android:elevation="4sp"
             android:layout_gravity="center"
             android:textSize="16sp" />
@@ -85,7 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0.00"
-            android:textColor="#0f0f0f"
+            android:textColor="@color/card_text"
             android:elevation="4sp"
             android:layout_gravity="center"
             android:textSize="60sp" />
@@ -94,7 +93,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="KM/H"
-            android:textColor="#0f0f0f"
+            android:textColor="@color/card_text"
             android:elevation="4sp"
             android:layout_gravity="center"
             android:textSize="16sp" />
@@ -115,7 +114,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="DISTANCE"
-            android:textColor="#0f0f0f"
+            android:textColor="@color/card_text"
             android:elevation="4sp"
             android:layout_gravity="center"
             android:textSize="16sp" />
@@ -126,7 +125,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0.00"
-            android:textColor="#0f0f0f"
+            android:textColor="@color/card_text"
             android:elevation="4sp"
             android:layout_gravity="center"
             android:textSize="40sp" />
@@ -136,7 +135,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="KM"
-            android:textColor="#0f0f0f"
+            android:textColor="@color/card_text"
             android:elevation="4sp"
             android:layout_gravity="center"
             android:textSize="16sp" />
@@ -171,6 +170,5 @@
         android:layout_width="0sp"
         android:layout_height="0sp"
         android:layout_weight="1" />
-
 
 </LinearLayout>
