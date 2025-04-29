@@ -43,7 +43,7 @@ class StepTrackingService : Service(), SensorEventListener {
         const val EXTRA_SPEED = "extra_speed"
         const val EXTRA_IS_TRACKING = "extra_is_tracking"
 
-        private const val STEP_LENGTH_METERS = 0.65f
+        private const val DEFAULT_STEP_LENGTH_CM = 65 // 65 cm
         private const val UPDATE_INTERVAL_MS = 1000L
     }
 
@@ -54,9 +54,10 @@ class StepTrackingService : Service(), SensorEventListener {
     private var currentSteps: Int = 0
     private var totalDistanceKm: Float = 0f
     private var currentSpeedKmh: Float = 0f
+    private var stepLengthMeters: Float = DEFAULT_STEP_LENGTH_CM / 100f
     
     // FOR DEBUGGING
-    private val debugMode = false // CHANGE TO TRUE TO GENERATE VIRTUAL STEPS
+    private val debugMode = true // CHANGE TO TRUE TO GENERATE VIRTUAL STEPS
     private var debugStepsAdded = 0
 
     private lateinit var sensorManager: SensorManager
@@ -79,7 +80,7 @@ class StepTrackingService : Service(), SensorEventListener {
         val stepsToAdd = (3..5).random()
         debugStepsAdded += stepsToAdd
 
-        val additionalDistanceMeters = stepsToAdd * STEP_LENGTH_METERS
+        val additionalDistanceMeters = stepsToAdd * stepLengthMeters
         totalDistanceKm += (additionalDistanceMeters / 1000f)
 
         broadcastDistanceUpdate()
@@ -92,6 +93,13 @@ class StepTrackingService : Service(), SensorEventListener {
         super.onCreate()
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        
+        // Load user's preferred step length from settings
+        val sharedPreferences = getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+        val userStepLengthCm = sharedPreferences.getInt("step_length", DEFAULT_STEP_LENGTH_CM)
+        stepLengthMeters = userStepLengthCm / 100f
+        
+        Log.d(TAG, "Using step length: $userStepLengthCm cm ($stepLengthMeters meters)")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -220,7 +228,7 @@ class StepTrackingService : Service(), SensorEventListener {
             Log.d(TAG, "Step detected: Additional: $additionalSteps, Total: $currentSteps")
 
             if (additionalSteps > 0) {
-                val additionalDistanceMeters = additionalSteps * STEP_LENGTH_METERS
+                val additionalDistanceMeters = additionalSteps * stepLengthMeters
                 totalDistanceKm += (additionalDistanceMeters / 1000f)
                 Log.d(TAG, "Distance updated: +${additionalDistanceMeters}m, Total: ${totalDistanceKm}km")
                 broadcastDistanceUpdate()
@@ -263,9 +271,23 @@ class StepTrackingService : Service(), SensorEventListener {
     }
 
     private fun updateNotification() {
+        val sharedPreferences = getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+        val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
+        
+        // Determine the distance text based on unit preference
+        val distanceText = when (unitPreference) {
+            "Miles (mi)" -> {
+                val distanceMiles = totalDistanceKm * 0.621371f
+                String.format("%.2f mi", distanceMiles)
+            }
+            else -> {
+                String.format("%.2f km", totalDistanceKm)
+            }
+        }
+        
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("StepSync")
-            .setContentText("Distance: ${String.format("%.2f", totalDistanceKm)} km")
+            .setContentText("Distance: $distanceText")
             .setSmallIcon(R.drawable.ic_notif_icon)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()

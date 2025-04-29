@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -37,10 +38,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var timeTextView: TextView
     private lateinit var speedTextView: TextView
     private lateinit var statusTextView: TextView
+    private lateinit var paceTextView: TextView
     
     private lateinit var weeklyActivitiesTextView: TextView
     private lateinit var weeklyTimeTextView: TextView
     private lateinit var weeklyDistanceTextView: TextView
+    private lateinit var weeklyPaceTextView: TextView
     
     private lateinit var stepsCountTextView: TextView
     private lateinit var goalPercentageTextView: TextView
@@ -49,6 +52,28 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var sharedPreferences: SharedPreferences
     private var dailyStepGoal = DEFAULT_STEP_GOAL
     private var currentStepCount = 0
+    private var distanceUnit = "km" // Default unit
+    
+    private val unitsChangedReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == "com.android.stepsync.UNITS_CHANGED") {
+                val unitType = intent.getStringExtra("unit_type") ?: "Kilometers (km)"
+                updateDisplayUnits(unitType)
+                
+                // Update the displayed values with new units
+                val isTracking = sharedPreferences.getBoolean("is_tracking", false)
+                val distance = sharedPreferences.getFloat("current_distance", 0f)
+                val speed = sharedPreferences.getFloat("current_speed", 0f)
+                
+                updateDistanceDisplay(distance)
+                updateSpeedDisplay(speed)
+                updateStatusDisplay(isTracking)
+                
+                // Reload weekly stats to apply new units
+                loadWeeklyStats()
+            }
+        }
+    }
     
     private val trackingUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -87,14 +112,32 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         sharedPreferences = requireActivity().getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
         dailyStepGoal = sharedPreferences.getInt("daily_step_goal", DEFAULT_STEP_GOAL)
 
+        // Get preferred units
+        val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
+        updateDisplayUnits(unitPreference ?: "Kilometers (km)")
+
         distanceTextView = view.findViewById(R.id.text_home_distance)
         timeTextView = view.findViewById(R.id.text_home_time)
         speedTextView = view.findViewById(R.id.text_home_speed)
         statusTextView = view.findViewById(R.id.text_home_status)
         
+        // Try to find pace TextView if it exists in the layout
+        try {
+            paceTextView = view.findViewById(R.id.text_home_pace)
+        } catch (e: Exception) {
+            android.util.Log.d(TAG, "Pace TextView not found in layout")
+        }
+        
         weeklyActivitiesTextView = view.findViewById(R.id.text_activities)
         weeklyTimeTextView = view.findViewById(R.id.text_time)
         weeklyDistanceTextView = view.findViewById(R.id.text_distance)
+        
+        // Try to find weekly pace TextView if it exists in the layout
+        try {
+            weeklyPaceTextView = view.findViewById(R.id.text_pace)
+        } catch (e: Exception) {
+            android.util.Log.d(TAG, "Weekly pace TextView not found in layout")
+        }
         
         stepsCountTextView = view.findViewById(R.id.text_step_count)
         goalPercentageTextView = view.findViewById(R.id.text_goal_percentage)
@@ -158,10 +201,26 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             addAction(StepTrackingService.ACTION_SPEED_UPDATE)
             addAction(StepTrackingService.ACTION_TRACKING_STATUS)
             addAction(ACTION_ACTIVITY_COMPLETED)
+            addAction("com.android.stepsync.UNITS_CHANGED")
         }
         
         LocalBroadcastManager.getInstance(requireContext())
             .registerReceiver(trackingUpdateReceiver, intentFilter)
+            
+        // Also register for global broadcasts (for unit changes from settings)
+        // Use RECEIVER_NOT_EXPORTED flag for Android 14+ compatibility
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(
+                unitsChangedReceiver, 
+                IntentFilter("com.android.stepsync.UNITS_CHANGED"),
+                Context.RECEIVER_NOT_EXPORTED
+            )
+        } else {
+            requireActivity().registerReceiver(
+                unitsChangedReceiver, 
+                IntentFilter("com.android.stepsync.UNITS_CHANGED")
+            )
+        }
             
         requestTrackingStatus()
         loadWeeklyStats()
@@ -172,6 +231,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         
         LocalBroadcastManager.getInstance(requireContext())
             .unregisterReceiver(trackingUpdateReceiver)
+            
+        try {
+            requireActivity().unregisterReceiver(unitsChangedReceiver)
+        } catch (e: Exception) {
+            // Receiver might not be registered
+        }
     }
     
     private fun requestTrackingStatus() {
@@ -186,14 +251,54 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val minutes = (timeInSeconds % 3600) / 60
 
         timeTextView.text= "${hours}h ${minutes}m"
+        
+        // Save current time for pace calculations
+        sharedPreferences.edit().putLong("current_time_seconds", timeInSeconds).apply()
+        
+        // Update pace after time change if we have distance data
+        if (::paceTextView.isInitialized) {
+            val distanceKm = sharedPreferences.getFloat("current_distance", 0f)
+            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
+            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
+                distanceKm, timeInSeconds, unitPreference ?: "Kilometers (km)")
+            paceTextView.text = pace
+        }
     }
     
     private fun updateDistanceDisplay(distanceInKm: Float) {
-        distanceTextView.text = String.format(Locale.getDefault(), "%.2f km", distanceInKm)
+        // Convert based on selected unit
+        val converted = when {
+            distanceUnit == "mi" -> distanceInKm * 0.621371f // km to miles
+            else -> distanceInKm // Already in km
+        }
+        
+        distanceTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, distanceUnit)
+        
+        // Save current distance for potential unit conversion updates
+        sharedPreferences.edit().putFloat("current_distance", distanceInKm).apply()
+        
+        // Update pace display if the TextView exists
+        if (::paceTextView.isInitialized) {
+            val timeSeconds = sharedPreferences.getLong("current_time_seconds", 0L)
+            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
+            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
+                distanceInKm, timeSeconds, unitPreference ?: "Kilometers (km)")
+            paceTextView.text = pace
+        }
     }
     
     private fun updateSpeedDisplay(speedInKmh: Float) {
-        speedTextView.text = String.format(Locale.getDefault(), "%.2f km/h", speedInKmh)
+        // Convert based on selected unit
+        val converted = when {
+            distanceUnit == "mi" -> speedInKmh * 0.621371f // km/h to mph
+            else -> speedInKmh // Already in km/h
+        }
+        
+        val unitText = if (distanceUnit == "mi") "mph" else "km/h"
+        speedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
+        
+        // Save current speed for potential unit conversion updates
+        sharedPreferences.edit().putFloat("current_speed", speedInKmh).apply()
     }
     
     private fun updateStatusDisplay(isTracking: Boolean) {
@@ -315,7 +420,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val minutes = (timeSeconds % 3600) / 60
         weeklyTimeTextView.text = String.format(Locale.getDefault(), "%dh %dm", hours, minutes)
 
-        weeklyDistanceTextView.text = String.format(Locale.getDefault(), "%.2f km", distanceKm)
+        // Convert distance units if needed
+        val convertedDistance = when {
+            distanceUnit == "mi" -> distanceKm * 0.621371f // km to miles
+            else -> distanceKm // Already in km
+        }
+        
+        weeklyDistanceTextView.text = String.format(Locale.getDefault(), "%.2f %s", 
+            convertedDistance, distanceUnit)
+            
+        // Update weekly pace if the TextView exists
+        if (::weeklyPaceTextView.isInitialized && activities > 0) {
+            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
+            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
+                distanceKm, timeSeconds, unitPreference ?: "Kilometers (km)")
+            weeklyPaceTextView.text = pace
+        }
     }
 
     private fun createTestActivity() {
@@ -376,6 +496,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     Toast.makeText(context, "Failed to delete activities: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
         }
+    }
+    
+    private fun updateDisplayUnits(unitType: String) {
+        distanceUnit = when (unitType) {
+            "Miles (mi)" -> "mi"
+            else -> "km" // Default to metric
+        }
+    }
+    
+    private fun isLongDistance(): Boolean {
+        // No longer needed since we removed the mixed unit option
+        return false
+    }
+    
+    private fun estimateStepsFromDistance(distanceKm: Float): Int {
+        // No longer needed since we removed the steps only option
+        return 0
     }
     
     companion object {
