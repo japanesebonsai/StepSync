@@ -1,38 +1,152 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="?attr/colorSurface"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:padding="24dp">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Username"
-        app:hintTextAppearance="@font/f42dotsans_regular"
-        android:layout_marginBottom="24sp">
+        app:navigationIcon="@drawable/ic_close"
+        app:titleCentered="true"
+        app:titleTextAppearance="@font/f42dotsans_regular"
+        android:theme="@style/ThemeOverlay.Material3.Toolbar.Surface"
+        android:layout_marginBottom="20dp"/>
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/edit_username"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="text"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Password"
-        app:hintTextAppearance="@font/f42dotsans_regular"
-        android:layout_marginBottom="24sp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_password"
+        android:orientation="vertical"
+        android:layout_marginBottom="20dp">
+        <TextView
+            android:fontFamily="@font/f42dotsans_regular"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"/>
+            android:text="Profile Picture"
+            android:layout_marginBottom="10dp"/>
 
-    </com.google.android.material.textfield.TextInputLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="4dp">
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardview_editpicture1"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginHorizontal="14dp"
+                app:cardCornerRadius="8dp"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="2dp">
+
+                <ImageView
+                    android:id="@+id/imageview_editpicture1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/profile1_icon"
+                    android:layout_gravity="center"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardview_editpicture2"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_margin="14dp"
+                app:cardCornerRadius="8dp"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="2dp">
+
+                <ImageView
+                    android:id="@+id/imageview_editpicture2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/profile2_icon"
+                    android:layout_gravity="center"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardview_editpicture3"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_margin="14dp"
+                app:cardCornerRadius="8dp"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="2dp">
+
+                <ImageView
+                    android:id="@+id/imageview_editpicture3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/profile3_icon"
+                    android:layout_gravity="center"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardview_editpicture4"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_margin="14dp"
+                app:cardCornerRadius="8dp"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="2dp">
+
+                <ImageView
+                    android:id="@+id/imageview_editpicture4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/profile4_icon"
+                    android:layout_gravity="center"/>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            app:hintTextAppearance="@font/f42dotsans_regular"
+            android:layout_marginVertical="10dp"
+            android:id="@+id/layout_username">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            app:hintTextAppearance="@font/f42dotsans_regular"
+            app:passwordToggleEnabled="true"
+            android:layout_marginVertical="10dp"
+            android:id="@+id/layout_password">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="right"/>
 </LinearLayout>
