@@ -33,7 +33,6 @@ import java.util.Locale
 import java.util.UUID
 
 class RecordFragment : Fragment(R.layout.fragment_record) {
-    //TODO record activities in database using map (include activity created date)
     //TODO pause activity
     private val TAG = "RecordFragment"
 
@@ -194,7 +193,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     
     private fun saveActivityToDatabase() {
         Log.d(TAG, "saveActivityToDatabase called - timeSeconds: $currentTimeSeconds, distanceKm: $currentDistanceKm")
-        if (currentTimeSeconds > 1) {
+        if (currentTimeSeconds > 10) {
             val currentUser = (requireActivity().application as MyApplication).firebaseAuth.currentUser
             
             if (currentUser != null) {
@@ -246,7 +245,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             }
         } else {
             Log.d(TAG, "Activity not saved: too short (${currentTimeSeconds}s)")
-            Toast.makeText(context, "Activity too short. Record for at least 1 second.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Activity too short. Record for at least 10 second.", Toast.LENGTH_SHORT).show()
         }
     }
 

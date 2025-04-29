@@ -52,6 +52,11 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            if (username.length > 16) {
+                usernameLayout.error = "Username length must be 16 at most"
+                return@setOnClickListener
+            }
+
             // Email format validation
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 emailLayout.error = "Enter a valid email address"
@@ -100,38 +105,48 @@ class RegisterActivity : AppCompatActivity() {
 
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    user?.let {
-                        val userData = mapOf(
-                            "username" to username,
-                            "email" to email,
-                            "createdAt" to ServerValue.TIMESTAMP
-                        )
-
-                        (application as MyApplication)
-                            .database
-                            .getReference("users/${user.uid}")
-                            .setValue(userData)
-                            .addOnSuccessListener {
-                                startActivity(Intent(this, LoginActivity::class.java))
-                                finish()
-                            }
-                            .addOnFailureListener { e ->
-                                Toast.makeText(
-                                    this,
-                                    "Database error: ${e.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                    }
-                } else {
+                if (!task.isSuccessful) {
                     Toast.makeText(
                         this,
                         "Registration failed: ${task.exception?.message}",
                         Toast.LENGTH_SHORT
                     ).show()
+                    return@addOnCompleteListener
                 }
+
+                auth.currentUser
+                    ?.getIdToken(true)
+                    ?.addOnSuccessListener {
+                        writeNewUserToDatabase(auth.currentUser!!.uid, username, email)
+                    }
+                    ?.addOnFailureListener { e ->
+                        Toast.makeText(
+                            this,
+                            "Token error: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+            }
+    }
+
+
+    private fun writeNewUserToDatabase(uid: String, username: String, email: String) {
+        val userData = mapOf(
+            "username" to username,
+            "email" to email,
+            "createdAt" to ServerValue.TIMESTAMP,
+            "profilePicture" to R.drawable.profile1_icon
+        )
+        (application as MyApplication)
+            .database
+            .getReference("users/$uid")
+            .setValue(userData)
+            .addOnSuccessListener {
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Database error: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 }

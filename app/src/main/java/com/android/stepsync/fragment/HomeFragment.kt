@@ -149,17 +149,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun updateTimeDisplay(timeInSeconds: Long) {
         val hours = timeInSeconds / 3600
         val minutes = (timeInSeconds % 3600) / 60
-        val seconds = timeInSeconds % 60
-        
-        timeTextView.text = String.format(Locale.getDefault(), "Time: %d:%02d:%02d", hours, minutes, seconds)
+
+        timeTextView.text= "${hours}h ${minutes}m"
     }
     
     private fun updateDistanceDisplay(distanceInKm: Float) {
-        distanceTextView.text = String.format(Locale.getDefault(), "Distance: %.2f km", distanceInKm)
+        distanceTextView.text = String.format(Locale.getDefault(), "%.2f km", distanceInKm)
     }
     
     private fun updateSpeedDisplay(speedInKmh: Float) {
-        speedTextView.text = String.format(Locale.getDefault(), "Speed: %.2f km/h", speedInKmh)
+        speedTextView.text = String.format(Locale.getDefault(), "%.2f km/h", speedInKmh)
     }
     
     private fun updateStatusDisplay(isTracking: Boolean) {

@@ -1,16 +1,24 @@
 {
   "rules": {
     "users": {
+      ".read": true,
+      ".write": false,
       "$uid": {
-        ".read": "$uid === auth.uid",
+        ".read": true,
         ".write": "$uid === auth.uid"
       }
     },
     "user_activities": {
       "$uid": {
         ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
+        ".write": "$uid === auth.uid",
+        "$activity_id": {
+          ".validate": "newData.hasChildren(['id', 'userId', 'timestamp', 'durationSeconds', 'distanceKm', 'avgSpeedKmh'])",
+          "userId": {
+            ".validate": "newData.val() === auth.uid"
+          }
+        }
       }
     }
   }
-} 
+}
