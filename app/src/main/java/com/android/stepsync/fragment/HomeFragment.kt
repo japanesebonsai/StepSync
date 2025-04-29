@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -17,23 +18,37 @@ import com.android.stepsync.activity.SettingsActivity
 import com.android.stepsync.app.MyApplication
 import com.android.stepsync.helper.StepTrackingService
 import com.android.stepsync.data.ActivityRecord
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.UUID
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
+    private val TAG = "HomeFragment"
+    private val DEFAULT_STEP_GOAL = 5000 // Default daily goal of 5,000 steps
+    
     private lateinit var distanceTextView: TextView
     private lateinit var timeTextView: TextView
     private lateinit var speedTextView: TextView
     private lateinit var statusTextView: TextView
-
+    
     private lateinit var weeklyActivitiesTextView: TextView
     private lateinit var weeklyTimeTextView: TextView
     private lateinit var weeklyDistanceTextView: TextView
+    
+    private lateinit var stepsCountTextView: TextView
+    private lateinit var goalPercentageTextView: TextView
+    private lateinit var progressSteps: CircularProgressIndicator
+    
+    private lateinit var sharedPreferences: SharedPreferences
+    private var dailyStepGoal = DEFAULT_STEP_GOAL
+    private var currentStepCount = 0
     
     private val trackingUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -45,6 +60,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 StepTrackingService.ACTION_DISTANCE_UPDATE -> {
                     val distance = intent.getFloatExtra(StepTrackingService.EXTRA_DISTANCE, 0f)
                     updateDistanceDisplay(distance)
+                    
+                    val estimatedSteps = (distance * 1000 / 0.65).toInt() // 0.65m per step
+                    updateStepProgress(estimatedSteps)
                 }
                 StepTrackingService.ACTION_SPEED_UPDATE -> {
                     val speed = intent.getFloatExtra(StepTrackingService.EXTRA_SPEED, 0f)
@@ -61,42 +79,57 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private val TAG = "HomeFragment"
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         android.util.Log.d(TAG, "onViewCreated called")
 
+        sharedPreferences = requireActivity().getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+        dailyStepGoal = sharedPreferences.getInt("daily_step_goal", DEFAULT_STEP_GOAL)
+
         distanceTextView = view.findViewById(R.id.text_home_distance)
         timeTextView = view.findViewById(R.id.text_home_time)
         speedTextView = view.findViewById(R.id.text_home_speed)
         statusTextView = view.findViewById(R.id.text_home_status)
-
+        
         weeklyActivitiesTextView = view.findViewById(R.id.text_activities)
         weeklyTimeTextView = view.findViewById(R.id.text_time)
         weeklyDistanceTextView = view.findViewById(R.id.text_distance)
         
+        stepsCountTextView = view.findViewById(R.id.text_step_count)
+        goalPercentageTextView = view.findViewById(R.id.text_goal_percentage)
+        progressSteps = view.findViewById(R.id.progress_steps)
+        
+        progressSteps.max = dailyStepGoal
+        
         val buttonSettings = view.findViewById<Button>(R.id.button_settings)
+        val buttonSetGoal = view.findViewById<Button>(R.id.button_set_goal)
 
         buttonSettings.setOnClickListener {
             val intent = Intent(requireContext(), SettingsActivity::class.java)
             startActivity(intent)
         }
 
-        // DEBUG: LONG PRESS ON SETTINGS BUTTON TO ADD TEST ACTIVITY
         buttonSettings.setOnLongClickListener {
             android.util.Log.d(TAG, "Long press on settings button - creating test activity")
             createTestActivity()
             true
         }
-
+        
+        buttonSetGoal.setOnClickListener {
+            showStepGoalDialog()
+        }
+        
         weeklyActivitiesTextView.setOnClickListener {
             android.util.Log.d(TAG, "Activities TextView clicked - forcing reload of stats")
             loadWeeklyStats()
         }
-
-        // DEBUG: LONG PRESS ON ACTIVITIES NUMBER TO CLEAR ALL ACTIVITIES
+        
+        stepsCountTextView.setOnLongClickListener {
+            showStepGoalDialog()
+            true
+        }
+        
         weeklyActivitiesTextView.setOnLongClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("Delete All Activities")
@@ -108,9 +141,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 .show()
             true
         }
-
+        
+        updateStepProgress(currentStepCount)
+        
         requestTrackingStatus()
-
+        
         loadWeeklyStats()
     }
     
@@ -163,6 +198,35 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     
     private fun updateStatusDisplay(isTracking: Boolean) {
         statusTextView.text = if (isTracking) "Status: Recording" else "Status: Not Recording"
+    }
+    
+    private fun showStepGoalDialog() {
+        val items = arrayOf("5,000 steps", "7,500 steps", "10,000 steps", "15,000 steps", "20,000 steps")
+        val values = intArrayOf(5000, 7500, 10000, 15000, 20000)
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Set Daily Step Goal")
+            .setItems(items) { _, which ->
+                dailyStepGoal = values[which]
+                sharedPreferences.edit().putInt("daily_step_goal", dailyStepGoal).apply()
+                progressSteps.max = dailyStepGoal
+                updateStepProgress(currentStepCount)
+                val formatter = NumberFormat.getNumberInstance(Locale.US)
+                Toast.makeText(context, "Daily goal set to ${formatter.format(dailyStepGoal)} steps", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+    
+    private fun updateStepProgress(steps: Int) {
+        currentStepCount = steps
+        
+        val formatter = NumberFormat.getNumberInstance(Locale.US)
+        stepsCountTextView.text = formatter.format(steps)
+        
+        val percentage = if (dailyStepGoal > 0) (steps * 100 / dailyStepGoal) else 0
+        goalPercentageTextView.text = "$percentage% of ${formatter.format(dailyStepGoal)} steps"
+        
+        progressSteps.progress = steps.coerceAtMost(dailyStepGoal)
     }
     
     fun loadWeeklyStats() {

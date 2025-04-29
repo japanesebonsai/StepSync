@@ -9,14 +9,10 @@
     <FrameLayout
         android:id="@+id/frameLayoutFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
     </FrameLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
@@ -24,9 +20,5 @@
         android:layout_height="wrap_content"
         android:background="#f2f2f2"
         app:menu="@menu/menu_navigation"/>
-
-
-
-
 
 </LinearLayout>

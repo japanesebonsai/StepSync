@@ -1,223 +1,323 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="@drawable/gradient_drawable">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="horizontal"
-        android:padding="20sp"
-        android:background="@drawable/header_drawable"
-        android:layout_marginBottom="20sp"
-        android:elevation="4sp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Home"
-            android:textSize="16sp"
-            android:fontFamily="@font/f42dotsans_extrabold"
-            android:textAlignment="center" />
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/button_settings"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:background="@drawable/settings_icon"
-        android:layout_gravity="right"
-        android:layout_marginRight="40dp"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginVertical="20dp"
-        android:fontFamily="@font/f42dotsans_bold"
-        android:textSize="32sp"
-        android:text="This Week"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginHorizontal="20dp">
-
-        <LinearLayout
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/f42dotsans_regular"
-                android:textSize="16sp"
-                android:text="Activities"/>
-            <TextView
-                android:id="@+id/text_activities"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/f42dotsans_bold"
-                android:textSize="24sp"
-                android:text="0"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/f42dotsans_regular"
-                android:textSize="16sp"
-                android:text="Time"/>
-            <TextView
-                android:id="@+id/text_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/f42dotsans_bold"
-                android:textSize="24sp"
-                android:text="0h 0m"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/f42dotsans_regular"
-                android:textSize="16sp"
-                android:text="Distance"/>
-            <TextView
-                android:id="@+id/text_distance"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/f42dotsans_bold"
-                android:textSize="24sp"
-                android:text="0.00 km"/>
-        </LinearLayout>
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="15dp"
-        android:fontFamily="@font/f42dotsans_bold"
-        android:textSize="32sp"
-        android:text="Current Activity"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginHorizontal="20dp"
-        android:padding="12dp"
-        android:background="@drawable/placeholder_drawable"
-        android:elevation="4dp"
-        android:layout_marginBottom="16dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="24dp">
 
-        <TextView
-            android:id="@+id/text_home_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/f42dotsans_bold"
-            android:textSize="18sp"
-            android:text="Status: Not Recording"
-            android:layout_marginBottom="10dp"/>
-
+        <!-- App Bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp"
-            android:weightSum="3">
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:layout_weight="1">
-                <TextView
-                    android:fontFamily="@font/f42dotsans_regular"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Time"
-                    android:textSize="14sp"/>
+            android:padding="16dp"
+            android:background="@drawable/header_drawable"
+            android:layout_marginBottom="12dp"
+            android:elevation="4dp">
 
-                <TextView
-                    android:fontFamily="@font/f42dotsans_extrabold"
-                    android:id="@+id/text_home_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="0h 0m"
-                    android:textSize="20sp"/>
-            </LinearLayout>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Home"
+                android:textSize="18sp"
+                android:fontFamily="@font/f42dotsans_extrabold"
+                android:textAlignment="center" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:layout_weight="1">
-                <TextView
-                    android:fontFamily="@font/f42dotsans_regular"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Distance"
-                    android:textSize="14sp"/>
-
-                <TextView
-                    android:fontFamily="@font/f42dotsans_extrabold"
-                    android:id="@+id/text_home_distance"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="0.00 km"
-                    android:textSize="20sp"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:layout_weight="1">
-                <TextView
-                    android:fontFamily="@font/f42dotsans_regular"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Speed"
-                    android:textSize="14sp"/>
-
-                <TextView
-                    android:fontFamily="@font/f42dotsans_extrabold"
-                    android:id="@+id/text_home_speed"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="0.00 km/h"
-                    android:textSize="20sp"/>
-            </LinearLayout>
-
+            <Button
+                android:id="@+id/button_settings"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/settings_icon" />
         </LinearLayout>
+
+        <!-- Today's Goal Section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:fontFamily="@font/f42dotsans_bold"
+            android:textSize="24sp"
+            android:text="Today's Goal"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="24dp">
+            
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp">
+                
+                <!-- Circular Progress Indicator -->
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/progress_steps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    app:indicatorSize="200dp"
+                    app:trackThickness="14dp"
+                    app:indicatorColor="@color/purple_500"
+                    app:trackColor="#E0E0E0"
+                    app:trackCornerRadius="3dp"/>
+                    
+                <!-- Step Count Text -->
+                <TextView
+                    android:id="@+id/text_step_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:fontFamily="@font/f42dotsans_extrabold"
+                    android:textSize="36sp"
+                    android:text="0"/>
+                    
+                <!-- Goal Percentage Text -->
+                <TextView
+                    android:id="@+id/text_goal_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/text_step_count"
+                    android:layout_centerHorizontal="true"
+                    android:fontFamily="@font/f42dotsans_regular"
+                    android:textSize="16sp"
+                    android:text="0% Complete"/>
+                    
+                <!-- Set Goal Button -->
+                <Button
+                    android:id="@+id/button_set_goal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/text_goal_percentage"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="20dp"
+                    android:text="Set Daily Goal"
+                    android:backgroundTint="@color/purple_500"
+                    android:textColor="@android:color/white"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"/>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Current Activity Section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:fontFamily="@font/f42dotsans_bold"
+            android:textSize="24sp"
+            android:text="Current Activity"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/text_home_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/f42dotsans_bold"
+                    android:textSize="18sp"
+                    android:text="Status: Not Recording"
+                    android:layout_marginBottom="12dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp"
+                    android:weightSum="3">
+                    
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:layout_weight="1">
+                        <TextView
+                            android:fontFamily="@font/f42dotsans_regular"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="Time"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:fontFamily="@font/f42dotsans_extrabold"
+                            android:id="@+id/text_home_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="0h 0m"
+                            android:textSize="20sp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:layout_weight="1">
+                        <TextView
+                            android:fontFamily="@font/f42dotsans_regular"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="Distance"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:fontFamily="@font/f42dotsans_extrabold"
+                            android:id="@+id/text_home_distance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="0.00 km"
+                            android:textSize="20sp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:layout_weight="1">
+                        <TextView
+                            android:fontFamily="@font/f42dotsans_regular"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="Speed"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:fontFamily="@font/f42dotsans_extrabold"
+                            android:id="@+id/text_home_speed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="0.00 km/h"
+                            android:textSize="20sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Weekly Stats Section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:fontFamily="@font/f42dotsans_bold"
+            android:textSize="24sp"
+            android:text="This Week"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:gravity="center">
+                    
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/f42dotsans_regular"
+                        android:textSize="16sp"
+                        android:text="Activities"/>
+                        
+                    <TextView
+                        android:id="@+id/text_activities"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/f42dotsans_bold"
+                        android:textSize="24sp"
+                        android:text="0"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:gravity="center">
+                    
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/f42dotsans_regular"
+                        android:textSize="16sp"
+                        android:text="Time"/>
+                        
+                    <TextView
+                        android:id="@+id/text_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/f42dotsans_bold"
+                        android:textSize="24sp"
+                        android:text="0h 0m"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:gravity="center">
+                    
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/f42dotsans_regular"
+                        android:textSize="16sp"
+                        android:text="Distance"/>
+                        
+                    <TextView
+                        android:id="@+id/text_distance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/f42dotsans_bold"
+                        android:textSize="24sp"
+                        android:text="0.00 km"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
     </LinearLayout>
-
-    <Space
-        android:layout_width="0sp"
-        android:layout_height="0sp"
-        android:layout_weight="1" />
-
-</LinearLayout>
+</ScrollView>
