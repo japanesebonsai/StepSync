@@ -202,7 +202,7 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:layout_weight="1">
+                        android:layout_weight="1.25">
                         <TextView
                             android:fontFamily="@font/f42dotsans_regular"
                             android:layout_width="wrap_content"
@@ -217,15 +217,16 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:gravity="center"
                             android:text="0.00 km/h"
-                            android:textSize="20sp"/>
+                            android:textSize="18sp"/>
                     </LinearLayout>
                     
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:layout_weight="1">
+                        android:layout_weight="0.75">
                         <TextView
                             android:fontFamily="@font/f42dotsans_regular"
                             android:layout_width="wrap_content"
@@ -241,7 +242,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:text="-"
-                            android:textSize="20sp"/>
+                            android:textSize="18sp"/>
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>

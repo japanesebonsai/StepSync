@@ -1,3 +1,5 @@
+import android.content.Context
+import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,11 +9,16 @@ import com.android.stepsync.R
 import com.android.stepsync.data.ActivityRecord
 
 class ActivitiesAdapter(
+    private val context: Context,
     private val items: List<ActivityRecord>
 ) : RecyclerView.Adapter<ActivitiesAdapter.ViewHolder>() {
 
-    companion object {
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+    private val distanceUnit: String = if (sharedPreferences.getString("units", "Kilometers (km)") == "Miles (mi)") "mi" else "km"
+    private val stepLengthCm: Int = sharedPreferences.getInt("step_length", 65) // Default 65cm
+    private val stepsPerKm: Int = (100000 / stepLengthCm) // 100,000 cm per km / step length in cm
 
+    companion object {
         private const val STEPS_PER_KM = 1312
     }
 
@@ -37,14 +44,30 @@ class ActivitiesAdapter(
         val minutes = (act.durationSeconds % 3600) / 60
         holder.timeTv.text = "${hours}h ${minutes}m"
 
-        holder.distanceTv.text = "${"%.2f".format(act.distanceKm)} km"
+        // Convert distance based on selected unit
+        val distance = if (distanceUnit == "mi") {
+            act.distanceKm * 0.621371f // km to miles
+        } else {
+            act.distanceKm // Already in km
+        }
+        holder.distanceTv.text = "${"%.2f".format(distance)} $distanceUnit"
 
-        val paceMinPerKm = if (act.avgSpeedKmh > 0f) 60.0 / act.avgSpeedKmh else 0.0
-        val paceMin = paceMinPerKm.toInt()
-        val paceSec = ((paceMinPerKm - paceMin) * 60).toInt()
-        holder.paceTv.text = "%d:%02d/km".format(paceMin, paceSec)
+        // Pace display should also reflect the unit
+        val paceUnit = if (distanceUnit == "mi") "/mi" else "/km"
+        val paceMinPerUnit = if (act.avgSpeedKmh > 0f) {
+            if (distanceUnit == "mi") {
+                60.0 / (act.avgSpeedKmh * 0.621371) // min/mi
+            } else {
+                60.0 / act.avgSpeedKmh // min/km
+            }
+        } else 0.0
+        
+        val paceMin = paceMinPerUnit.toInt()
+        val paceSec = ((paceMinPerUnit - paceMin) * 60).toInt()
+        holder.paceTv.text = "%d:%02d$paceUnit".format(paceMin, paceSec)
 
-        val steps = (act.distanceKm * STEPS_PER_KM).toInt()
+        // Calculate steps using the user's step length setting
+        val steps = (act.distanceKm * stepsPerKm).toInt()
         holder.stepsTv.text = "$steps"
     }
 }

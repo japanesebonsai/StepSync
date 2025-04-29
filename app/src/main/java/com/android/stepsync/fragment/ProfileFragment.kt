@@ -33,7 +33,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         recycler = view.findViewById(R.id.recycler_activities)
         recycler.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ActivitiesAdapter(activityList)
+        adapter = ActivitiesAdapter(requireContext(), activityList)
         recycler.adapter = adapter
 
         loadActivitiesFromDatabase()

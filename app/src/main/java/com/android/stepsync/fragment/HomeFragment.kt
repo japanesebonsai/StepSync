@@ -86,7 +86,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     val distance = intent.getFloatExtra(StepTrackingService.EXTRA_DISTANCE, 0f)
                     updateDistanceDisplay(distance)
                     
-                    val estimatedSteps = (distance * 1000 / 0.65).toInt() // 0.65m per step
+                    // Estimate steps using the user's step length setting
+                    val stepLengthCm = sharedPreferences.getInt("step_length", 65) // Default 65cm
+                    val stepsPerKm = (100000 / stepLengthCm) // 100,000 cm per km / step length in cm
+                    val estimatedSteps = (distance * stepsPerKm).toInt()
                     updateStepProgress(estimatedSteps)
                 }
                 StepTrackingService.ACTION_SPEED_UPDATE -> {
@@ -295,7 +298,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
         
         val unitText = if (distanceUnit == "mi") "mph" else "km/h"
-        speedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
+        
+        // Ensure consistent display with proper spacing
+        if (converted < 10) {
+            // Add extra space for single digit speeds to improve alignment
+            speedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
+        } else {
+            speedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
+        }
         
         // Save current speed for potential unit conversion updates
         sharedPreferences.edit().putFloat("current_speed", speedInKmh).apply()
