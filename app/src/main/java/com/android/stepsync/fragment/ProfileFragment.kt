@@ -48,24 +48,24 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         userRef = app.database.getReference("users/$userId")
         userListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
+                override fun onDataChange(snapshot: DataSnapshot) {
                 val username = snapshot.child("username").getValue(String::class.java).orEmpty()
-                val ts = snapshot.child("createdAt").getValue(Long::class.java) ?: 0L
+                    val ts = snapshot.child("createdAt").getValue(Long::class.java) ?: 0L
                 val profilePicResId = snapshot.child("profilePicture").getValue(Int::class.java)
 
                 text_username.text = username
-                val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-                text_created_at.text = sdf.format(Date(ts))
+                    val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                    text_created_at.text = sdf.format(Date(ts))
 
                 profilePicResId?.let {
                     imageview_picture.setImageResource(it)
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {
+                override fun onCancelled(error: DatabaseError) {
                 Log.e(TAG, "Failed to load profile data: ${error.message}")
             }
-        }
+                }
         userRef.addValueEventListener(userListener)
 
         button_edit.setOnClickListener {
@@ -101,6 +101,11 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     child.getValue(ActivityRecord::class.java)
                         ?.let { activityList.add(it) }
                 }
+                
+                // Sort activities by timestamp in descending order (newest first)
+                activityList.sortByDescending { it.timestamp }
+                
+                Log.d(TAG, "Loaded ${activityList.size} activities, sorted by newest first")
                 adapter.notifyDataSetChanged()
             }
 

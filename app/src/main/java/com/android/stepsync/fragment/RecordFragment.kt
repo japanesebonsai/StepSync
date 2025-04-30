@@ -33,6 +33,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import java.util.Locale
 import java.util.UUID
+import java.text.NumberFormat
 
 class RecordFragment : Fragment(R.layout.fragment_record) {
     //TODO pause activity
@@ -41,6 +42,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     private lateinit var timeTextView: TextView
     private lateinit var avgSpeedTextView: TextView
     private lateinit var distanceTextView: TextView
+    private lateinit var stepsTextView: TextView
     private lateinit var recordButton: Button
     private lateinit var sharedPreferences: SharedPreferences
     private var distanceUnit = "km" // Default unit
@@ -52,6 +54,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     private var currentTimeSeconds: Long = 0
     private var currentDistanceKm: Float = 0f
     private var currentSpeedKmh: Float = 0f
+    private var currentSteps: Int = 0
     
     private lateinit var pauseButton: Button
 
@@ -87,6 +90,11 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                     currentSpeedKmh = speed
                     updateSpeedDisplay(speed)
                 }
+                StepTrackingService.ACTION_STEPS_UPDATE -> {
+                    val steps = intent.getIntExtra(StepTrackingService.EXTRA_STEPS, 0)
+                    currentSteps = steps
+                    updateStepsDisplay(steps)
+                }
                 StepTrackingService.ACTION_TRACKING_STATUS -> {
                     isTracking = intent.getBooleanExtra(StepTrackingService.EXTRA_IS_TRACKING, false)
                     isPaused = intent.getBooleanExtra(StepTrackingService.EXTRA_IS_PAUSED, false)
@@ -106,6 +114,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         timeTextView = view.findViewById(R.id.text_time)
         avgSpeedTextView = view.findViewById(R.id.text_avgspeed)
         distanceTextView = view.findViewById(R.id.text_distance)
+        stepsTextView = view.findViewById(R.id.text_steps)
         recordButton = view.findViewById(R.id.button_record)
         pauseButton = view.findViewById(R.id.button_pause)
 
@@ -134,6 +143,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             addAction(StepTrackingService.ACTION_TIME_UPDATE)
             addAction(StepTrackingService.ACTION_DISTANCE_UPDATE)
             addAction(StepTrackingService.ACTION_SPEED_UPDATE)
+            addAction(StepTrackingService.ACTION_STEPS_UPDATE)
             addAction(StepTrackingService.ACTION_TRACKING_STATUS)
             addAction("com.android.stepsync.UNITS_CHANGED")
         }
@@ -224,6 +234,9 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                 Manifest.permission.ACTIVITY_RECOGNITION
             ) == PackageManager.PERMISSION_GRANTED) {
 
+            // Reset the current activity steps count
+            sharedPreferences.edit().putInt("current_activity_steps", 0).apply()
+
             val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
                 action = StepTrackingService.ACTION_START_TRACKING
             }
@@ -236,6 +249,9 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     }
 
     private fun stopTracking() {
+        // Clear the current activity steps since we're done
+        sharedPreferences.edit().putInt("current_activity_steps", 0).apply()
+        
         val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
             action = StepTrackingService.ACTION_STOP_TRACKING
         }
@@ -247,7 +263,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     }
     
     private fun saveActivityToDatabase() {
-        Log.d(TAG, "saveActivityToDatabase called - timeSeconds: $currentTimeSeconds, distanceKm: $currentDistanceKm")
+        Log.d(TAG, "saveActivityToDatabase called - timeSeconds: $currentTimeSeconds, distanceKm: $currentDistanceKm, steps: $currentSteps")
         if (currentTimeSeconds > 10) {
             val currentUser = (requireActivity().application as MyApplication).firebaseAuth.currentUser
             
@@ -258,13 +274,21 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                 
                 Log.d(TAG, "Saving activity: userId=$userId, timeSeconds=$currentTimeSeconds, distanceKm=$currentDistanceKm, timestamp=$timestamp")
                 
+                // Make sure speed is calculated correctly even if it wasn't updated during tracking
+                val calculatedSpeed = if (currentTimeSeconds > 0) {
+                    (currentDistanceKm / (currentTimeSeconds / 3600.0f))
+                } else currentSpeedKmh
+                
+                Log.d(TAG, "Raw speed value: $currentSpeedKmh, Calculated speed: $calculatedSpeed")
+                
                 val activityRecord = ActivityRecord(
                     id = activityId,
                     userId = userId,
                     timestamp = timestamp,
                     durationSeconds = currentTimeSeconds,
                     distanceKm = currentDistanceKm,
-                    avgSpeedKmh = currentSpeedKmh
+                    avgSpeedKmh = calculatedSpeed,
+                    steps = currentSteps // Use the actual steps counter
                 )
                 
                 Log.d(TAG, "Activity object created: $activityRecord")
@@ -275,19 +299,31 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                 
                 Log.d(TAG, "Database reference path: user_activities/$userId/$activityId")
                 
+                // No need to estimate steps anymore since we have the actual count from the service
+                
                 dbRef.setValue(activityRecord)
                     .addOnSuccessListener {
                         Log.d(TAG, "Activity saved successfully with ID: $activityId")
                         val intent = Intent(HomeFragment.ACTION_ACTIVITY_COMPLETED)
+                        intent.putExtra("activity_steps", currentSteps)
                         LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
                         Log.d(TAG, "Broadcast sent: ${HomeFragment.ACTION_ACTIVITY_COMPLETED}")
+                        
+                        // Store a reference to the context/activity to prevent null reference
+                        val activityContext = activity
+                        
                         Handler(Looper.getMainLooper()).postDelayed({
-                            Toast.makeText(context, "Activity recorded successfully!", Toast.LENGTH_SHORT).show()
-                            if (activity is DashboardActivity) {
-                                Log.d(TAG, "Switching to Home Fragment and updating stats")
-                                (activity as DashboardActivity).switchToHomeAndUpdateStats()
+                            // Check if context or activity is still valid before showing toast
+                            if (activityContext != null && isAdded) {
+                                Toast.makeText(activityContext, "Activity recorded successfully!", Toast.LENGTH_SHORT).show()
+                                if (activityContext is DashboardActivity) {
+                                    Log.d(TAG, "Switching to Home Fragment and updating stats")
+                                    activityContext.switchToHomeAndUpdateStats()
+                                } else {
+                                    Log.e(TAG, "Activity is not DashboardActivity: ${activityContext.javaClass.simpleName}")
+                                }
                             } else {
-                                Log.e(TAG, "Activity is not DashboardActivity: ${activity?.javaClass?.simpleName}")
+                                Log.d(TAG, "Fragment no longer attached, skipping UI updates")
                             }
                         }, 1000)
                     }
@@ -396,6 +432,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                 updateTimeDisplay(0)
                 updateDistanceDisplay(0f)
                 updateSpeedDisplay(0f)
+                updateStepsDisplay(0)
             }
         }
     }
@@ -427,6 +464,11 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         
         val unitText = if (distanceUnit == "mi") "mph" else "km/h"
         avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
+    }
+    
+    private fun updateStepsDisplay(steps: Int) {
+        val formatter = NumberFormat.getNumberInstance(Locale.getDefault())
+        stepsTextView.text = formatter.format(steps)
     }
     
     private fun updateDisplayUnits(unitType: String) {

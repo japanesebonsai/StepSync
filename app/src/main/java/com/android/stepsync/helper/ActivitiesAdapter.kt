@@ -40,9 +40,17 @@ class ActivitiesAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val act = items[position]
 
-        val hours   = act.durationSeconds / 3600
+        val hours = act.durationSeconds / 3600
         val minutes = (act.durationSeconds % 3600) / 60
-        holder.timeTv.text = "${hours}h ${minutes}m"
+        val seconds = act.durationSeconds % 60
+        
+        // Format time to include seconds, especially for short durations
+        val timeText = when {
+            hours > 0 -> "${hours}h ${minutes}m ${seconds}s"
+            minutes > 0 -> "${minutes}m ${seconds}s"
+            else -> "${seconds}s"
+        }
+        holder.timeTv.text = timeText
 
         // Convert distance based on selected unit
         val distance = if (distanceUnit == "mi") {

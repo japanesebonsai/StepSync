@@ -7,8 +7,9 @@ data class ActivityRecord(
     val timestamp: Long = 0,
     val durationSeconds: Long = 0,
     val distanceKm: Float = 0f,
-    val avgSpeedKmh: Float = 0f
+    val avgSpeedKmh: Float = 0f,
+    var steps: Int = 0
 ) {
     // Required empty constructor for Firebase
-    constructor() : this("", "", 0, 0, 0f, 0f)
+    constructor() : this("", "", 0, 0, 0f, 0f, 0)
 }

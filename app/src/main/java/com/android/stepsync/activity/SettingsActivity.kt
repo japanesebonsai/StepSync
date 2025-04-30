@@ -243,7 +243,7 @@ class SettingsActivity : AppCompatActivity() {
         layoutAboutDevelopers.setOnClickListener {
             startActivity(Intent(this, DeveloperActivity::class.java))
         }
-        
+
         // Back button
         buttonBack.setOnClickListener {
             finish()
