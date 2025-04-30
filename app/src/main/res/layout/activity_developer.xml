@@ -50,6 +50,7 @@
         android:layout_marginLeft="20sp"
         android:layout_marginRight="20sp"
         android:fontFamily="@font/f42dotsans_bold"
+        android:textColor="@color/text_color"
         android:text="About"/>
 
     <LinearLayout
@@ -72,6 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="@font/f42dotsans_regular"
+                android:textColor="@color/card_text"
                 android:text="Track your daily steps, stay active, and sync your progress effortlessly with StepSync—your perfect companion for a healthier you."/>
         </LinearLayout>
     </LinearLayout>
@@ -83,6 +85,7 @@
         android:layout_marginLeft="20sp"
         android:layout_marginRight="20sp"
         android:fontFamily="@font/f42dotsans_bold"
+        android:textColor="@color/text_color"
         android:text="Developers"/>
 
     <LinearLayout

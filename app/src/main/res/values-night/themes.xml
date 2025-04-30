@@ -7,9 +7,22 @@
         <item name="android:colorBackground">@color/background_color</item>
 
         <item name="buttonTint">@color/primary_color</item>
+        
+        <!-- Bottom navigation styling -->
+        <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
 
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
+    </style>
+    
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.BottomNavigationView</item>
+    </style>
+
+    <style name="ThemeOverlay.App.BottomNavigationView" parent="">
+        <item name="colorPrimary">@color/primary_color</item>
+        <item name="colorSurface">@color/header_background</item>
+        <item name="colorOnSurface">@color/text_color</item>
     </style>
 </resources>

@@ -2,13 +2,16 @@
     <style name="Theme.StepSync" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Core colors -->
         <item name="colorPrimary">@color/primary_color</item>
-        <item name="colorOnPrimary">@color/background_color</item>
+        <item name="colorOnPrimary">@color/white</item>
         <item name="colorSurface">@color/background_color</item>
         <item name="colorOnSurface">@color/text_color</item>
         <item name="android:colorBackground">@color/background_color</item>
 
         <!-- Button colors -->
         <item name="buttonTint">@color/primary_color</item>
+
+        <!-- Bottom navigation styling -->
+        <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
 
         <!-- System bars -->
         <item name="android:statusBarColor">@android:color/transparent</item>
@@ -17,5 +20,15 @@
 
         <!-- Optional: App bar text/icon color -->
         <item name="toolbarStyle">@style/Widget.Material3.Toolbar</item>
+    </style>
+
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.BottomNavigationView</item>
+    </style>
+
+    <style name="ThemeOverlay.App.BottomNavigationView" parent="">
+        <item name="colorPrimary">@color/primary_color</item>
+        <item name="colorSurface">@color/header_background</item>
+        <item name="colorOnSurface">@color/text_color</item>
     </style>
 </resources>

@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="unitofmeasure_items" />
-
+    <string-array name="unitofmeasure_items">
+        <item>Kilometers (km)</item>
+        <item>Miles (mi)</item>
+    </string-array>
+    
+    <string-array name="theme_items">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    
+    <string-array name="step_length_items">
+        <item>60 cm</item>
+        <item>65 cm</item>
+        <item>70 cm</item>
+        <item>75 cm</item>
+        <item>80 cm</item>
+    </string-array>
+    
+    <string-array name="daily_goal_items">
+        <item>5,000 steps</item>
+        <item>7,500 steps</item>
+        <item>10,000 steps</item>
+        <item>15,000 steps</item>
+        <item>20,000 steps</item>
+    </string-array>
 </resources>

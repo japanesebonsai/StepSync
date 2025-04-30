@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
@@ -21,6 +22,7 @@ import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
+import com.android.stepsync.activity.SettingsActivity
 import com.android.stepsync.app.MyApplication
 import com.android.stepsync.data.ActivityRecord
 import com.android.stepsync.fragment.HomeFragment
@@ -40,13 +42,32 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     private lateinit var avgSpeedTextView: TextView
     private lateinit var distanceTextView: TextView
     private lateinit var recordButton: Button
+    private lateinit var sharedPreferences: SharedPreferences
+    private var distanceUnit = "km" // Default unit
 
     private var isTracking = false
+    private var isPaused = false
     private val PERMISSION_REQUEST_ACTIVITY_RECOGNITION = 1001
 
     private var currentTimeSeconds: Long = 0
     private var currentDistanceKm: Float = 0f
     private var currentSpeedKmh: Float = 0f
+    
+    private lateinit var pauseButton: Button
+
+    private val unitsChangedReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == "com.android.stepsync.UNITS_CHANGED") {
+                val unitType = intent.getStringExtra("unit_type") ?: "Kilometers (km)"
+                updateDisplayUnits(unitType)
+                
+                // Update the displayed values with new units
+                updateTimeDisplay(currentTimeSeconds)
+                updateDistanceDisplay(currentDistanceKm)
+                updateSpeedDisplay(currentSpeedKmh)
+            }
+        }
+    }
 
     private val trackingUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -68,6 +89,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                 }
                 StepTrackingService.ACTION_TRACKING_STATUS -> {
                     isTracking = intent.getBooleanExtra(StepTrackingService.EXTRA_IS_TRACKING, false)
+                    isPaused = intent.getBooleanExtra(StepTrackingService.EXTRA_IS_PAUSED, false)
                     updateUI()
                 }
             }
@@ -76,10 +98,18 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        sharedPreferences = requireActivity().getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+
+        val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
+        
         timeTextView = view.findViewById(R.id.text_time)
         avgSpeedTextView = view.findViewById(R.id.text_avgspeed)
         distanceTextView = view.findViewById(R.id.text_distance)
         recordButton = view.findViewById(R.id.button_record)
+        pauseButton = view.findViewById(R.id.button_pause)
+
+        updateDisplayUnits(unitPreference ?: "Kilometers (km)")
 
         recordButton.setOnClickListener {
             if (isTracking) {
@@ -87,6 +117,10 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             } else {
                 startTracking()
             }
+        }
+
+        pauseButton.setOnClickListener {
+            pauseTrackingToggle()
         }
 
         checkTrackingStatus()
@@ -101,9 +135,24 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             addAction(StepTrackingService.ACTION_DISTANCE_UPDATE)
             addAction(StepTrackingService.ACTION_SPEED_UPDATE)
             addAction(StepTrackingService.ACTION_TRACKING_STATUS)
+            addAction("com.android.stepsync.UNITS_CHANGED")
         }
         LocalBroadcastManager.getInstance(requireContext())
             .registerReceiver(trackingUpdateReceiver, intentFilter)
+            
+        // Also register for global broadcasts (for unit changes from settings)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(
+                unitsChangedReceiver, 
+                IntentFilter("com.android.stepsync.UNITS_CHANGED"),
+                Context.RECEIVER_NOT_EXPORTED
+            )
+        } else {
+            requireActivity().registerReceiver(
+                unitsChangedReceiver, 
+                IntentFilter("com.android.stepsync.UNITS_CHANGED")
+            )
+        }
 
         checkTrackingStatus()
     }
@@ -113,6 +162,12 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
 
         LocalBroadcastManager.getInstance(requireContext())
             .unregisterReceiver(trackingUpdateReceiver)
+            
+        try {
+            requireActivity().unregisterReceiver(unitsChangedReceiver)
+        } catch (e: Exception) {
+            // Receiver might not be registered
+        }
     }
 
     private fun checkAndRequestPermissions() {
@@ -327,6 +382,14 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
 
     private fun updateUI() {
         recordButton.text = if (isTracking) "STOP" else "START"
+        
+        // Show pause button only when tracking is active
+        if (isTracking) {
+            pauseButton.visibility = View.VISIBLE
+            pauseButton.text = if (isPaused) "RESUME" else "PAUSE"
+        } else {
+            pauseButton.visibility = View.GONE
+        }
 
         if (!isTracking) {
             if (currentTimeSeconds == 0L) {
@@ -346,11 +409,59 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     }
 
     private fun updateDistanceDisplay(distanceInKm: Float) {
-        distanceTextView.text = String.format(Locale.getDefault(), "%.2f", distanceInKm)
+        // Convert based on selected unit
+        val converted = when (distanceUnit) {
+            "mi" -> distanceInKm * 0.621371f // km to miles
+            else -> distanceInKm // Already in km
+        }
+        
+        distanceTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, distanceUnit)
     }
 
     private fun updateSpeedDisplay(speedInKmh: Float) {
-        avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f", speedInKmh)
+        // Convert based on selected unit
+        val converted = when (distanceUnit) {
+            "mi" -> speedInKmh * 0.621371f // km/h to mph
+            else -> speedInKmh // Already in km/h
+        }
+        
+        val unitText = if (distanceUnit == "mi") "mph" else "km/h"
+        avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
+    }
+    
+    private fun updateDisplayUnits(unitType: String) {
+        distanceUnit = when (unitType) {
+            "Miles (mi)" -> "mi"
+            else -> "km" // Default to metric
+        }
+        
+        try {
+            val speedUnitLabel = view?.findViewById<TextView>(R.id.text_speed_unit)
+            val distanceUnitLabel = view?.findViewById<TextView>(R.id.text_distance_unit)
+
+            speedUnitLabel?.text = if (distanceUnit == "mi") "MPH" else "KM/H"
+
+            distanceUnitLabel?.text = if (distanceUnit == "mi") "MI" else "KM"
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating unit labels: ${e.message}")
+        }
+    }
+    
+    private fun pauseTrackingToggle() {
+        if (isPaused) {
+            // Resume tracking
+            val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
+                action = StepTrackingService.ACTION_RESUME_TRACKING
+            }
+            requireContext().startService(serviceIntent)
+        } else {
+            // Pause tracking
+            val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
+                action = StepTrackingService.ACTION_PAUSE_TRACKING
+            }
+            requireContext().startService(serviceIntent)
+        }
+        updateUI()
     }
     
     companion object {
