@@ -434,7 +434,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             "Miles (mi)" -> "mi"
             else -> "km" // Default to metric
         }
-        
+
         try {
             val speedUnitLabel = view?.findViewById<TextView>(R.id.text_speed_unit)
             val distanceUnitLabel = view?.findViewById<TextView>(R.id.text_distance_unit)
