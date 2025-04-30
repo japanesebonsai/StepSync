@@ -89,6 +89,7 @@
             android:layout_gravity="center"
             android:textSize="60sp" />
         <TextView
+            android:id="@+id/text_speed_unit"
             android:fontFamily="@font/f42dotsans_regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -131,6 +132,7 @@
             android:textSize="40sp" />
 
         <TextView
+            android:id="@+id/text_distance_unit"
             android:fontFamily="@font/f42dotsans_regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

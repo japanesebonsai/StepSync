@@ -100,16 +100,16 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         super.onViewCreated(view, savedInstanceState)
         
         sharedPreferences = requireActivity().getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
-        
-        // Get preferred units
+
         val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
-        updateDisplayUnits(unitPreference ?: "Kilometers (km)")
         
         timeTextView = view.findViewById(R.id.text_time)
         avgSpeedTextView = view.findViewById(R.id.text_avgspeed)
         distanceTextView = view.findViewById(R.id.text_distance)
         recordButton = view.findViewById(R.id.button_record)
         pauseButton = view.findViewById(R.id.button_pause)
+
+        updateDisplayUnits(unitPreference ?: "Kilometers (km)")
 
         recordButton.setOnClickListener {
             if (isTracking) {
@@ -433,6 +433,17 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         distanceUnit = when (unitType) {
             "Miles (mi)" -> "mi"
             else -> "km" // Default to metric
+        }
+        
+        try {
+            val speedUnitLabel = view?.findViewById<TextView>(R.id.text_speed_unit)
+            val distanceUnitLabel = view?.findViewById<TextView>(R.id.text_distance_unit)
+
+            speedUnitLabel?.text = if (distanceUnit == "mi") "MPH" else "KM/H"
+
+            distanceUnitLabel?.text = if (distanceUnit == "mi") "MI" else "KM"
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating unit labels: ${e.message}")
         }
     }
     
