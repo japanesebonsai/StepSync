@@ -38,11 +38,13 @@ class StepTrackingService : Service(), SensorEventListener {
         const val ACTION_TIME_UPDATE = "com.android.stepsync.TIME_UPDATE"
         const val ACTION_DISTANCE_UPDATE = "com.android.stepsync.DISTANCE_UPDATE"
         const val ACTION_SPEED_UPDATE = "com.android.stepsync.SPEED_UPDATE"
+        const val ACTION_STEPS_UPDATE = "com.android.stepsync.STEPS_UPDATE"
         const val ACTION_TRACKING_STATUS = "com.android.stepsync.TRACKING_STATUS"
 
         const val EXTRA_TIME = "extra_time"
         const val EXTRA_DISTANCE = "extra_distance"
         const val EXTRA_SPEED = "extra_speed"
+        const val EXTRA_STEPS = "extra_steps"
         const val EXTRA_IS_TRACKING = "extra_is_tracking"
         const val EXTRA_IS_PAUSED = "extra_is_paused"
 
@@ -85,14 +87,23 @@ class StepTrackingService : Service(), SensorEventListener {
     private fun addDebugSteps() {
         val stepsToAdd = (3..5).random()
         debugStepsAdded += stepsToAdd
+        
+        // Also update currentSteps so speed calculation works
+        currentSteps += stepsToAdd
 
         val additionalDistanceMeters = stepsToAdd * stepLengthMeters
         totalDistanceKm += (additionalDistanceMeters / 1000f)
+        
+        // Calculate the speed directly here for virtual steps
+        if (elapsedTimeSeconds > 0) {
+            currentSpeedKmh = (totalDistanceKm / (elapsedTimeSeconds / 3600.0f))
+        }
 
         broadcastDistanceUpdate()
         broadcastSpeedUpdate()
+        broadcastStepsUpdate()
         
-        Log.d(TAG, "Added $stepsToAdd debug steps, total: $debugStepsAdded, distance: $totalDistanceKm km")
+        Log.d(TAG, "Added $stepsToAdd debug steps, total: $debugStepsAdded, distance: $totalDistanceKm km, speed: $currentSpeedKmh km/h")
     }
 
     override fun onCreate() {
@@ -248,6 +259,7 @@ class StepTrackingService : Service(), SensorEventListener {
             broadcastTimeUpdate()
             broadcastDistanceUpdate()
             broadcastSpeedUpdate()
+            broadcastStepsUpdate()
 
             updateNotification()
         }
@@ -258,6 +270,7 @@ class StepTrackingService : Service(), SensorEventListener {
         broadcastTimeUpdate()
         broadcastDistanceUpdate()
         broadcastSpeedUpdate()
+        broadcastStepsUpdate()
     }
 
     private fun broadcastTrackingStatus() {
@@ -289,6 +302,13 @@ class StepTrackingService : Service(), SensorEventListener {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
+    private fun broadcastStepsUpdate() {
+        val intent = Intent(ACTION_STEPS_UPDATE).apply {
+            putExtra(EXTRA_STEPS, currentSteps)
+        }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
             val steps = event.values[0].toInt()
@@ -309,6 +329,7 @@ class StepTrackingService : Service(), SensorEventListener {
                 Log.d(TAG, "Distance updated: +${additionalDistanceMeters}m, Total: ${totalDistanceKm}km")
                 broadcastDistanceUpdate()
                 broadcastSpeedUpdate()
+                broadcastStepsUpdate()
             }
         }
     }

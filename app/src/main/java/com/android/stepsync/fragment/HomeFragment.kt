@@ -32,7 +32,7 @@ import java.util.UUID
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private val TAG = "HomeFragment"
-    private val DEFAULT_STEP_GOAL = 5000 // Default daily goal of 5,000 steps
+    private val DEFAULT_STEP_GOAL = 10000 // Default daily goal of 10,000 steps
     
     private lateinit var distanceTextView: TextView
     private lateinit var timeTextView: TextView
@@ -52,7 +52,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var sharedPreferences: SharedPreferences
     private var dailyStepGoal = DEFAULT_STEP_GOAL
     private var currentStepCount = 0
-    private var distanceUnit = "km" // Default unit
+    private var dailyTotalSteps = 0
+    private var distanceUnit = "km"
+    private var lastResetDateMillis = 0L
     
     private val unitsChangedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -101,6 +103,27 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     updateStatusDisplay(isTracking)
                 }
                 ACTION_ACTIVITY_COMPLETED -> {
+                    // If an activity was completed, get the steps from it
+                    val activitySteps = intent.getIntExtra("activity_steps", 0)
+                    if (activitySteps > 0) {
+                        android.util.Log.d(TAG, "Activity completed with $activitySteps steps")
+
+                        dailyTotalSteps += activitySteps
+                        sharedPreferences.edit()
+                            .putInt("daily_total_steps", dailyTotalSteps)
+                            .putInt("current_activity_steps", 0) // Reset current activity
+                            .apply()
+
+                        // Update the UI directly
+                        val formatter = NumberFormat.getNumberInstance(Locale.US)
+                        stepsCountTextView.text = formatter.format(dailyTotalSteps)
+                        
+                        val percentage = if (dailyStepGoal > 0) (dailyTotalSteps * 100 / dailyStepGoal) else 0
+                        goalPercentageTextView.text = "$percentage% of ${formatter.format(dailyStepGoal)} steps"
+                        
+                        progressSteps.progress = dailyTotalSteps.coerceAtMost(dailyStepGoal)
+                    }
+                    
                     loadWeeklyStats()
                 }
             }
@@ -114,6 +137,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         sharedPreferences = requireActivity().getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
         dailyStepGoal = sharedPreferences.getInt("daily_step_goal", DEFAULT_STEP_GOAL)
+        
+        // Load the daily total steps and check if we need to reset for a new day
+        checkAndResetDailySteps()
 
         // Get preferred units
         val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
@@ -208,6 +234,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     
     override fun onResume() {
         super.onResume()
+        
+        // Check if we need to reset the daily counter when resuming the app
+        checkAndResetDailySteps()
         
         val intentFilter = IntentFilter().apply {
             addAction(StepTrackingService.ACTION_TIME_UPDATE)
@@ -346,13 +375,69 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun updateStepProgress(steps: Int) {
         currentStepCount = steps
         
-        val formatter = NumberFormat.getNumberInstance(Locale.US)
-        stepsCountTextView.text = formatter.format(steps)
+        // Add new steps to daily total (only if this is higher than current value to avoid duplicates)
+        if (steps > 0) {
+            val previousActivitySteps = sharedPreferences.getInt("current_activity_steps", 0)
+            
+            // If this is a new value and higher than previous, update the daily total
+            if (steps > previousActivitySteps) {
+                val additionalSteps = steps - previousActivitySteps
+                dailyTotalSteps += additionalSteps
+                
+                // Save the new activity steps and daily total
+                sharedPreferences.edit()
+                    .putInt("current_activity_steps", steps)
+                    .putInt("daily_total_steps", dailyTotalSteps)
+                    .apply()
+                    
+                android.util.Log.d(TAG, "Daily total steps updated: $dailyTotalSteps (added $additionalSteps from current activity)")
+            }
+        }
         
-        val percentage = if (dailyStepGoal > 0) (steps * 100 / dailyStepGoal) else 0
+        // Display total daily steps instead of just current activity
+        val formatter = NumberFormat.getNumberInstance(Locale.US)
+        stepsCountTextView.text = formatter.format(dailyTotalSteps)
+        
+        val percentage = if (dailyStepGoal > 0) (dailyTotalSteps * 100 / dailyStepGoal) else 0
         goalPercentageTextView.text = "$percentage% of ${formatter.format(dailyStepGoal)} steps"
         
-        progressSteps.progress = steps.coerceAtMost(dailyStepGoal)
+        progressSteps.progress = dailyTotalSteps.coerceAtMost(dailyStepGoal)
+    }
+    
+    /**
+     * Check if we need to reset the daily step counter (at midnight)
+     */
+    private fun checkAndResetDailySteps() {
+        val currentTimeMillis = System.currentTimeMillis()
+        val lastResetMillis = sharedPreferences.getLong("last_daily_steps_reset", 0L)
+        
+        // Get today's date at midnight
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = currentTimeMillis
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val todayMidnightMillis = calendar.timeInMillis
+        
+        // Check if we last reset before today's midnight
+        if (lastResetMillis < todayMidnightMillis) {
+            // It's a new day, reset the counter
+            android.util.Log.d(TAG, "New day detected - resetting daily step counter")
+            dailyTotalSteps = 0
+            sharedPreferences.edit()
+                .putInt("daily_total_steps", 0)
+                .putInt("current_activity_steps", 0)
+                .putLong("last_daily_steps_reset", currentTimeMillis)
+                .apply()
+            
+            lastResetDateMillis = currentTimeMillis
+        } else {
+            // Same day, load the existing total
+            dailyTotalSteps = sharedPreferences.getInt("daily_total_steps", 0)
+            android.util.Log.d(TAG, "Loaded existing daily step counter: $dailyTotalSteps")
+            lastResetDateMillis = lastResetMillis
+        }
     }
     
     fun loadWeeklyStats() {
@@ -469,13 +554,20 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             
             android.util.Log.d(TAG, "Creating test activity: userId=$userId, timestamp=$timestamp")
 
+            // Calculate steps for this test activity
+            val testDistanceKm = 0.2f
+            val stepLengthCm = sharedPreferences.getInt("step_length", 65) // Default 65cm
+            val stepsPerKm = (100000 / stepLengthCm) // 100,000 cm per km / step length in cm
+            val testSteps = (testDistanceKm * stepsPerKm).toInt()
+
             val activityRecord = ActivityRecord(
                 id = activityId,
                 userId = userId,
                 timestamp = timestamp,
                 durationSeconds = 30L,
-                distanceKm = 0.2f,
-                avgSpeedKmh = 2.4f
+                distanceKm = testDistanceKm,
+                avgSpeedKmh = 2.4f,
+                steps = testSteps
             )
 
             val dbRef = (requireActivity().application as MyApplication)
@@ -485,7 +577,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             dbRef.setValue(activityRecord)
                 .addOnSuccessListener {
                     android.util.Log.d(TAG, "Test activity saved successfully with ID: $activityId")
-                    Toast.makeText(context, "Test activity created for debugging", Toast.LENGTH_SHORT).show()
+                    
+                    // Update the daily step count with these test steps
+                    dailyTotalSteps += testSteps
+                    sharedPreferences.edit().putInt("daily_total_steps", dailyTotalSteps).apply()
+                    
+                    // Update the UI directly
+                    val formatter = NumberFormat.getNumberInstance(Locale.US)
+                    stepsCountTextView.text = formatter.format(dailyTotalSteps)
+                    
+                    val percentage = if (dailyStepGoal > 0) (dailyTotalSteps * 100 / dailyStepGoal) else 0
+                    goalPercentageTextView.text = "$percentage% of ${formatter.format(dailyStepGoal)} steps"
+                    
+                    progressSteps.progress = dailyTotalSteps.coerceAtMost(dailyStepGoal)
+                    
+                    Toast.makeText(context, "Test activity created (+$testSteps steps)", Toast.LENGTH_SHORT).show()
                     loadWeeklyStats()
                 }
                 .addOnFailureListener { e ->

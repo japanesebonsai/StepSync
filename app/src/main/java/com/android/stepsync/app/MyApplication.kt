@@ -1,7 +1,9 @@
 package com.android.stepsync.app
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -17,6 +19,9 @@ class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        applyThemeSetting()
+        
         FirebaseApp.initializeApp(this)
         firebaseAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance("https://stepsync-d21c1-default-rtdb.asia-southeast1.firebasedatabase.app/")
@@ -24,6 +29,18 @@ class MyApplication : Application() {
         database.setPersistenceEnabled(true)
 
         verifyDatabaseConnectivity()
+    }
+    
+    private fun applyThemeSetting() {
+        val sharedPreferences = getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+        val themeSetting = sharedPreferences.getString("theme", "Light")
+
+        when (themeSetting) {
+            "Dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+        
+        Log.d(TAG, "Applied theme setting: $themeSetting")
     }
     
     private fun verifyDatabaseConnectivity() {

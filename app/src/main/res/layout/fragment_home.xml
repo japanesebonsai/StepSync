@@ -26,48 +26,48 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Home"
+            android:text="Home"
                 android:textSize="18sp"
-                android:fontFamily="@font/f42dotsans_extrabold"
-                android:textAlignment="center" />
+            android:fontFamily="@font/f42dotsans_extrabold"
+            android:textAlignment="center" />
 
-            <Button
-                android:id="@+id/button_settings"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+    <Button
+        android:id="@+id/button_settings"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
                 android:background="@drawable/settings_icon" />
         </LinearLayout>
 
         <!-- Today's Goal Section -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="12dp"
-            android:fontFamily="@font/f42dotsans_bold"
+        android:fontFamily="@font/f42dotsans_bold"
             android:textSize="24sp"
             android:textColor="@color/text_color"
             android:text="Today's Goal"/>
 
         <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:cardBackgroundColor="@color/progress_card_background"
             android:layout_marginBottom="24dp">
-            
-            <LinearLayout
+
+        <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
                 
                 <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginBottom="16dp">
                     
@@ -82,12 +82,12 @@
                         app:indicatorColor="@color/primary_color"
                         app:trackColor="@color/progress_track_color"
                         app:trackCornerRadius="4dp"/>
-                        
+
                     <!-- Step Count Text -->
                     <TextView
                         android:id="@+id/text_step_count"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+            android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:fontFamily="@font/f42dotsans_extrabold"
                         android:textSize="40sp"
@@ -96,13 +96,13 @@
                 </FrameLayout>
                     
                 <!-- Goal Percentage Text -->
-                <TextView
+            <TextView
                     android:id="@+id/text_goal_percentage"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:fontFamily="@font/f42dotsans_regular"
-                    android:textSize="16sp"
+                android:fontFamily="@font/f42dotsans_regular"
+                android:textSize="16sp"
                     android:textColor="@color/card_text"
                     android:text="0% of goal completed"
                     android:layout_marginBottom="20dp"/>
@@ -111,7 +111,7 @@
                 <Button
                     android:id="@+id/button_set_goal"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="Set Daily Goal"
                     android:backgroundTint="@color/primary_color"
@@ -119,126 +119,126 @@
                     android:paddingHorizontal="16dp"
                     android:paddingVertical="8dp"
                     app:cornerRadius="8dp"/>
-            </LinearLayout>
+        </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <!-- Current Activity Section -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="12dp"
-            android:fontFamily="@font/f42dotsans_bold"
-            android:textSize="24sp"
+                android:fontFamily="@font/f42dotsans_bold"
+                android:textSize="24sp"
             android:textColor="@color/text_color"
             android:text="Current Activity"/>
 
         <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:cardBackgroundColor="@color/card_background"
             android:layout_marginBottom="24dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
                 android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/text_home_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/f42dotsans_bold"
-                    android:textSize="18sp"
+        <TextView
+            android:id="@+id/text_home_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/f42dotsans_bold"
+            android:textSize="18sp"
                     android:textColor="@color/card_text"
-                    android:text="Status: Not Recording"
+            android:text="Status: Not Recording"
                     android:layout_marginBottom="12dp"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="8dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp"
                     android:weightSum="4">
                     
-                    <LinearLayout
+            <LinearLayout
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-                        <TextView
-                            android:fontFamily="@font/f42dotsans_regular"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_weight="1">
+                <TextView
+                    android:fontFamily="@font/f42dotsans_regular"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                             android:textColor="@color/card_text"
-                            android:text="Time"
-                            android:textSize="14sp"/>
+                    android:text="Time"
+                    android:textSize="14sp"/>
 
-                        <TextView
-                            android:fontFamily="@font/f42dotsans_extrabold"
-                            android:id="@+id/text_home_time"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                <TextView
+                    android:fontFamily="@font/f42dotsans_extrabold"
+                    android:id="@+id/text_home_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                             android:textColor="@color/card_text"
-                            android:text="0h 0m"
-                            android:textSize="20sp"/>
-                    </LinearLayout>
+                    android:text="0h 0m"
+                    android:textSize="20sp"/>
+            </LinearLayout>
 
-                    <LinearLayout
+            <LinearLayout
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-                        <TextView
-                            android:fontFamily="@font/f42dotsans_regular"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_weight="1">
+                <TextView
+                    android:fontFamily="@font/f42dotsans_regular"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                             android:textColor="@color/card_text"
-                            android:text="Distance"
-                            android:textSize="14sp"/>
+                    android:text="Distance"
+                    android:textSize="14sp"/>
 
-                        <TextView
-                            android:fontFamily="@font/f42dotsans_extrabold"
-                            android:id="@+id/text_home_distance"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                <TextView
+                    android:fontFamily="@font/f42dotsans_extrabold"
+                    android:id="@+id/text_home_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                             android:textColor="@color/card_text"
-                            android:text="0.00 km"
-                            android:textSize="20sp"/>
-                    </LinearLayout>
+                    android:text="0.00 km"
+                    android:textSize="20sp"/>
+            </LinearLayout>
 
-                    <LinearLayout
+            <LinearLayout
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
                         android:layout_weight="1.25">
-                        <TextView
-                            android:fontFamily="@font/f42dotsans_regular"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                <TextView
+                    android:fontFamily="@font/f42dotsans_regular"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                             android:textColor="@color/card_text"
-                            android:text="Speed"
-                            android:textSize="14sp"/>
+                    android:text="Speed"
+                    android:textSize="14sp"/>
 
-                        <TextView
-                            android:fontFamily="@font/f42dotsans_extrabold"
-                            android:id="@+id/text_home_speed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                <TextView
+                    android:fontFamily="@font/f42dotsans_extrabold"
+                    android:id="@+id/text_home_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                             android:gravity="center"
                             android:textColor="@color/card_text"
-                            android:text="0.00 km/h"
+                    android:text="0.00 km/h"
                             android:textSize="18sp"/>
                     </LinearLayout>
                     
@@ -350,9 +350,9 @@
                             android:textSize="24sp"
                             android:textColor="@color/card_text"
                             android:text="0h 0m"/>
-                    </LinearLayout>
-                </LinearLayout>
-                
+        </LinearLayout>
+    </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -411,5 +411,5 @@
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-    </LinearLayout>
+</LinearLayout>
 </ScrollView>
