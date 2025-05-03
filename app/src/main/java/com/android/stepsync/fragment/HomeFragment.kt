@@ -149,13 +149,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         timeTextView = view.findViewById(R.id.text_home_time)
         speedTextView = view.findViewById(R.id.text_home_speed)
         statusTextView = view.findViewById(R.id.text_home_status)
-        
-        // Try to find pace TextView if it exists in the layout
-        try {
-            paceTextView = view.findViewById(R.id.text_home_pace)
-        } catch (e: Exception) {
-            android.util.Log.d(TAG, "Pace TextView not found in layout")
-        }
+
+//        // Try to find pace TextView if it exists in the layout
+//        try {
+//            paceTextView = view.findViewById(R.id.text_home_pace)
+//        } catch (e: Exception) {
+//            android.util.Log.d(TAG, "Pace TextView not found in layout")
+//        }
         
         weeklyActivitiesTextView = view.findViewById(R.id.text_activities)
         weeklyTimeTextView = view.findViewById(R.id.text_time)
@@ -297,15 +297,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         
         // Save current time for pace calculations
         sharedPreferences.edit().putLong("current_time_seconds", timeInSeconds).apply()
-        
-        // Update pace after time change if we have distance data
-        if (::paceTextView.isInitialized) {
-            val distanceKm = sharedPreferences.getFloat("current_distance", 0f)
-            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
-            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
-                distanceKm, timeInSeconds, unitPreference ?: "Kilometers (km)")
-            paceTextView.text = pace
-        }
+
+//        // Update pace after time change if we have distance data
+//        if (::paceTextView.isInitialized) {
+//            val distanceKm = sharedPreferences.getFloat("current_distance", 0f)
+//            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
+//            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
+//                distanceKm, timeInSeconds, unitPreference ?: "Kilometers (km)")
+//            paceTextView.text = pace
+//        }
     }
     
     private fun updateDistanceDisplay(distanceInKm: Float) {
@@ -319,15 +319,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         
         // Save current distance for potential unit conversion updates
         sharedPreferences.edit().putFloat("current_distance", distanceInKm).apply()
-        
-        // Update pace display if the TextView exists
-        if (::paceTextView.isInitialized) {
-            val timeSeconds = sharedPreferences.getLong("current_time_seconds", 0L)
-            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
-            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
-                distanceInKm, timeSeconds, unitPreference ?: "Kilometers (km)")
-            paceTextView.text = pace
-        }
+
+//        // Update pace display if the TextView exists
+//        if (::paceTextView.isInitialized) {
+//            val timeSeconds = sharedPreferences.getLong("current_time_seconds", 0L)
+//            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
+//            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
+//                distanceInKm, timeSeconds, unitPreference ?: "Kilometers (km)")
+//            paceTextView.text = pace
+//        }
     }
     
     private fun updateSpeedDisplay(speedInKmh: Float) {
