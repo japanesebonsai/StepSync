@@ -452,7 +452,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             else -> distanceInKm // Already in km
         }
         
-        distanceTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, distanceUnit)
+        distanceTextView.text = String.format(Locale.getDefault(), "%.2f", converted)
     }
 
     private fun updateSpeedDisplay(speedInKmh: Float) {
@@ -461,9 +461,8 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             "mi" -> speedInKmh * 0.621371f // km/h to mph
             else -> speedInKmh // Already in km/h
         }
-        
-        val unitText = if (distanceUnit == "mi") "mph" else "km/h"
-        avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
+
+        avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f", converted)
     }
     
     private fun updateStepsDisplay(steps: Int) {
