@@ -52,7 +52,7 @@
                 android:text="Today's Goal"/>
 
             <Space
-                android:layout_width="110dp"
+                android:layout_width="100dp"
                 android:layout_height="match_parent" />
 
             <Button

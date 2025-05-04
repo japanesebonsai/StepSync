@@ -27,6 +27,7 @@ import com.android.stepsync.app.MyApplication
 import com.android.stepsync.data.ActivityRecord
 import com.android.stepsync.fragment.HomeFragment
 import com.android.stepsync.helper.StepTrackingService
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -122,7 +123,16 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
 
         recordButton.setOnClickListener {
             if (isTracking) {
-                stopTracking()
+                MaterialAlertDialogBuilder(requireActivity())
+                    .setTitle("Save Activity")
+                    .setMessage("Would you like to save your current activity?")
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.cancel()
+                    }
+                    .setPositiveButton("Finish") { _, _ ->
+                        stopTracking()
+                    }
+                    .show()
             } else {
                 startTracking()
             }
