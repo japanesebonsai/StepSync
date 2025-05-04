@@ -27,11 +27,11 @@ class DeveloperActivity : AppCompatActivity() {
                 middlename = "Matildo", 
                 lastname = "Muli", 
                 email = "johnjacob.muli@cit.edu",
-                photoSrc = R.drawable.profile2_icon,
-                hobbies = "Hobbies, Hobbies, Hobbies, Hobbies",
-                bio = "gdfgasdgasdfsad fsaf asdfasd fsdafsadfsdafsdfsf asfasfsdf",
-                age = 0,
-                personalInfo = "dafsdgasdgasdgasdfasd asgasdf sadf asdfas dfasdfasdfasdfa fasf sdfsd"
+                photoSrc = R.drawable.developer_picture1,
+                hobbies = "Reading, video games, and exploring internet culture and emerging technologies",
+                bio = "A strong advocate for lifelong learning, with a deep interest in technology, literature, and digital innovation.",
+                age = 20,
+                personalInfo = "Aspiring computer scientist with a passion for continuous growth and a curious mindset toward solving real-world problems through code."
             ),
             Developer(
                 firstname = "Primo Christian", 

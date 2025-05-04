@@ -31,24 +31,40 @@
                 android:fontFamily="@font/f42dotsans_extrabold"
                 android:textAlignment="center" />
 
-            <Button
-                android:id="@+id/button_settings"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:background="@drawable/settings_icon" />
+
         </LinearLayout>
 
         <!-- Today's Goal Section -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
-        android:fontFamily="@font/f42dotsans_bold"
-        android:textSize="24sp"
-        android:textColor="@color/text_color"
-        android:text="Today's Goal"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="@font/f42dotsans_bold"
+                android:textSize="24sp"
+                android:textColor="@color/text_color"
+                android:text="Today's Goal"/>
+
+            <Space
+                android:layout_width="110dp"
+                android:layout_height="match_parent" />
+
+            <Button
+                android:id="@+id/button_settings"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/settings_icon" />
+
+        </LinearLayout>
+
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
