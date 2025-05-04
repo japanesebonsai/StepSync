@@ -199,10 +199,12 @@
 
                         <AutoCompleteTextView
                             android:id="@+id/auto_complete_units"
-                            android:layout_width="140dp"
-                            android:layout_height="wrap_content"
+                            android:layout_width="150dp"
+                            android:layout_height="40dp"
                             android:inputType="none"
-                            android:text="Kilometers (km)"
+                            android:text="Kilometers(km)"
+                            android:textSize="10sp"
+                            android:fontFamily="@font/f42dotsans_regular"
                             android:dropDownHeight="wrap_content"
                             android:paddingVertical="12dp"
                             android:paddingHorizontal="16dp" />
@@ -266,10 +268,12 @@
 
                         <AutoCompleteTextView
                             android:id="@+id/auto_complete_theme"
-                            android:layout_width="140dp"
-                            android:layout_height="wrap_content"
+                            android:layout_width="150dp"
+                            android:layout_height="40dp"
                             android:inputType="none"
                             android:text="Light"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/f42dotsans_regular"
                             android:dropDownHeight="wrap_content"
                             android:paddingVertical="12dp"
                             android:paddingHorizontal="16dp" />

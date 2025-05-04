@@ -27,6 +27,7 @@ import com.android.stepsync.app.MyApplication
 import com.android.stepsync.data.ActivityRecord
 import com.android.stepsync.fragment.HomeFragment
 import com.android.stepsync.helper.StepTrackingService
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -122,7 +123,16 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
 
         recordButton.setOnClickListener {
             if (isTracking) {
-                stopTracking()
+                MaterialAlertDialogBuilder(requireActivity())
+                    .setTitle("Save Activity")
+                    .setMessage("Would you like to save your current activity?")
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.cancel()
+                    }
+                    .setPositiveButton("Finish") { _, _ ->
+                        stopTracking()
+                    }
+                    .show()
             } else {
                 startTracking()
             }
@@ -452,7 +462,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             else -> distanceInKm // Already in km
         }
         
-        distanceTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, distanceUnit)
+        distanceTextView.text = String.format(Locale.getDefault(), "%.2f", converted)
     }
 
     private fun updateSpeedDisplay(speedInKmh: Float) {
@@ -461,9 +471,8 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             "mi" -> speedInKmh * 0.621371f // km/h to mph
             else -> speedInKmh // Already in km/h
         }
-        
-        val unitText = if (distanceUnit == "mi") "mph" else "km/h"
-        avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
+
+        avgSpeedTextView.text = String.format(Locale.getDefault(), "%.2f", converted)
     }
     
     private fun updateStepsDisplay(steps: Int) {
