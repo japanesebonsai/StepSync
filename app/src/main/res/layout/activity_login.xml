@@ -69,7 +69,6 @@
         <TextView
             android:id="@+id/text_register"
             android:text="Create an Account"
-            android:textColor="#0f0f0f"
             android:fontFamily="@font/f42dotsans_bold"
             android:textAlignment="center"
             android:layout_width="match_parent"
