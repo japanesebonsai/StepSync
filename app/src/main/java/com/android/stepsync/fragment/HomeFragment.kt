@@ -292,8 +292,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun updateTimeDisplay(timeInSeconds: Long) {
         val hours = timeInSeconds / 3600
         val minutes = (timeInSeconds % 3600) / 60
+        val seconds = timeInSeconds % 60
 
-        timeTextView.text= "${hours}h ${minutes}m"
+        // Format time to include seconds, especially for short durations
+        timeTextView.text = when {
+            hours > 0 -> String.format(Locale.getDefault(), "%dh %dm", hours, minutes)
+            minutes > 0 -> String.format(Locale.getDefault(), "%dm %ds", minutes, seconds)
+            else -> String.format(Locale.getDefault(), "%ds", seconds)
+        }
         
         // Save current time for pace calculations
         sharedPreferences.edit().putLong("current_time_seconds", timeInSeconds).apply()
