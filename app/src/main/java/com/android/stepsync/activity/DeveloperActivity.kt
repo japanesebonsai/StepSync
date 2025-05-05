@@ -35,14 +35,14 @@ class DeveloperActivity : AppCompatActivity() {
             ),
             Developer(
                 firstname = "Primo Christian", 
-                middlename = "", 
+                middlename = "Cabo",
                 lastname = "Montejo", 
                 email = "primochristian.montejo@cit.edu",
-                photoSrc = R.drawable.profile1_icon,
-                hobbies = "Hobbies, Hobbies, Hobbies, Hobbies",
-                bio = "gdfgasdgasdfsad fsaf asdfasd fsdafsadfsdafsdfsf asfasfsdf",
+                photoSrc = R.drawable.developer_picture2,
+                hobbies = "Webnovels, Online Games, Anime, Manga",
+                bio = "Aspiring software developer passionate about game development. Always eager to learn and experiment with new technologies.",
                 age = 20,
-                personalInfo = "dafsdgasdgasdgasdfasd asgasdf sadf asdfas dfasdfasdfasdfa fasf sdfsd"
+                personalInfo = "From Talisay City, currently pursuing a degree in Computer Science at CIT. Passionate about tech, creativity, and building things that people enjoy using. "
             )
         )
 
