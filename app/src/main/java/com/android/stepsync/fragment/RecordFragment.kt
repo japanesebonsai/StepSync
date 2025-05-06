@@ -58,6 +58,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     private var currentSteps: Int = 0
     
     private lateinit var pauseButton: Button
+    private var currentUserId: String = ""
 
     private val unitsChangedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -109,6 +110,10 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         super.onViewCreated(view, savedInstanceState)
         
         sharedPreferences = requireActivity().getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+
+        // Get current user ID
+        val app = activity?.application as? MyApplication
+        currentUserId = app?.firebaseAuth?.currentUser?.uid ?: ""
 
         val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
         
@@ -245,7 +250,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             ) == PackageManager.PERMISSION_GRANTED) {
 
             // Reset the current activity steps count
-            sharedPreferences.edit().putInt("current_activity_steps", 0).apply()
+            sharedPreferences.edit().putInt("${currentUserId}_current_activity_steps", 0).apply()
 
             val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
                 action = StepTrackingService.ACTION_START_TRACKING
@@ -260,7 +265,7 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
 
     private fun stopTracking() {
         // Clear the current activity steps since we're done
-        sharedPreferences.edit().putInt("current_activity_steps", 0).apply()
+        sharedPreferences.edit().putInt("${currentUserId}_current_activity_steps", 0).apply()
         
         val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
             action = StepTrackingService.ACTION_STOP_TRACKING

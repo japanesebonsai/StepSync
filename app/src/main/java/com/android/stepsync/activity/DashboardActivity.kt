@@ -13,6 +13,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 class DashboardActivity : AppCompatActivity() {
     
     private var homeFragment: HomeFragment? = null
+    private var profileFragment: ProfileFragment? = null
+    private var recordFragment: RecordFragment? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,11 +37,17 @@ class DashboardActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_profile -> {
-                    replaceFragment(ProfileFragment())
+                    if (profileFragment == null) {
+                        profileFragment = ProfileFragment()
+                    }
+                    replaceFragment(profileFragment!!)
                     true
                 }
                 R.id.navigation_record -> {
-                    replaceFragment(RecordFragment())
+                    if (recordFragment == null) {
+                        recordFragment = RecordFragment()
+                    }
+                    replaceFragment(recordFragment!!)
                     true
                 }
                 else -> false
