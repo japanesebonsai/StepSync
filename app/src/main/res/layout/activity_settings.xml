@@ -105,11 +105,6 @@
                             android:text="65 cm"
                             android:textSize="12sp"/>
                     </LinearLayout>
-                    
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/placeholder_drawable" />
                 </LinearLayout>
 
                 <View
@@ -156,11 +151,6 @@
                             android:text="10,000 steps"
                             android:textSize="12sp"/>
                     </LinearLayout>
-                    
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/placeholder_drawable" />
                 </LinearLayout>
 
                 <View
@@ -195,7 +185,7 @@
                         android:id="@+id/dropdown_units"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+                        style="@style/Widget.App.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
                         <AutoCompleteTextView
                             android:id="@+id/auto_complete_units"
@@ -264,7 +254,7 @@
                         android:id="@+id/dropdown_theme"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+                        style="@style/Widget.App.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
                         <AutoCompleteTextView
                             android:id="@+id/auto_complete_theme"
@@ -401,11 +391,6 @@
                         android:layout_weight="1"
                         android:fontFamily="@font/f42dotsans_bold"
                         android:text="About Developers"/>
-                        
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/placeholder_drawable" />
                 </LinearLayout>
 
                 <View
@@ -472,11 +457,6 @@
                         android:fontFamily="@font/f42dotsans_bold"
                         android:textColor="#FF5252"
                         android:text="Logout"/>
-                        
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/placeholder_drawable" />
                 </LinearLayout>
 
                 <View
@@ -510,11 +490,6 @@
                         android:fontFamily="@font/f42dotsans_bold"
                         android:textColor="#FF5252"
                         android:text="Delete Account"/>
-                        
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/placeholder_drawable" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>

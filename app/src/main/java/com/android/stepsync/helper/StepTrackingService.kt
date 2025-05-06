@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
+import com.android.stepsync.app.MyApplication
 import java.util.concurrent.TimeUnit
 
 class StepTrackingService : Service(), SensorEventListener {
@@ -47,6 +48,7 @@ class StepTrackingService : Service(), SensorEventListener {
         const val EXTRA_STEPS = "extra_steps"
         const val EXTRA_IS_TRACKING = "extra_is_tracking"
         const val EXTRA_IS_PAUSED = "extra_is_paused"
+        const val EXTRA_USER_ID = "extra_user_id"
 
         private const val DEFAULT_STEP_LENGTH_CM = 65 // 65 cm
         private const val UPDATE_INTERVAL_MS = 1000L
@@ -63,6 +65,7 @@ class StepTrackingService : Service(), SensorEventListener {
     private var totalDistanceKm: Float = 0f
     private var currentSpeedKmh: Float = 0f
     private var stepLengthMeters: Float = DEFAULT_STEP_LENGTH_CM / 100f
+    private var currentUserId: String = ""
     
     // FOR DEBUGGING
     private val debugMode = false // CHANGE TO TRUE TO GENERATE VIRTUAL STEPS
@@ -110,6 +113,10 @@ class StepTrackingService : Service(), SensorEventListener {
         super.onCreate()
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        
+        // Get current user ID
+        val app = application as? MyApplication
+        currentUserId = app?.firebaseAuth?.currentUser?.uid ?: ""
         
         // Load user's preferred step length from settings
         loadStepLengthFromSettings()
@@ -277,6 +284,7 @@ class StepTrackingService : Service(), SensorEventListener {
         val intent = Intent(ACTION_TRACKING_STATUS).apply {
             putExtra(EXTRA_IS_TRACKING, isTracking)
             putExtra(EXTRA_IS_PAUSED, isPaused)
+            putExtra(EXTRA_USER_ID, currentUserId)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
@@ -284,6 +292,7 @@ class StepTrackingService : Service(), SensorEventListener {
     private fun broadcastTimeUpdate() {
         val intent = Intent(ACTION_TIME_UPDATE).apply {
             putExtra(EXTRA_TIME, elapsedTimeSeconds)
+            putExtra(EXTRA_USER_ID, currentUserId)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
@@ -291,6 +300,7 @@ class StepTrackingService : Service(), SensorEventListener {
     private fun broadcastDistanceUpdate() {
         val intent = Intent(ACTION_DISTANCE_UPDATE).apply {
             putExtra(EXTRA_DISTANCE, totalDistanceKm)
+            putExtra(EXTRA_USER_ID, currentUserId)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
@@ -298,6 +308,7 @@ class StepTrackingService : Service(), SensorEventListener {
     private fun broadcastSpeedUpdate() {
         val intent = Intent(ACTION_SPEED_UPDATE).apply {
             putExtra(EXTRA_SPEED, currentSpeedKmh)
+            putExtra(EXTRA_USER_ID, currentUserId)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
@@ -305,6 +316,7 @@ class StepTrackingService : Service(), SensorEventListener {
     private fun broadcastStepsUpdate() {
         val intent = Intent(ACTION_STEPS_UPDATE).apply {
             putExtra(EXTRA_STEPS, currentSteps)
+            putExtra(EXTRA_USER_ID, currentUserId)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }

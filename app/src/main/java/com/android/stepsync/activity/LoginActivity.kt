@@ -77,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
                     startActivity(Intent(this, DashboardActivity::class.java))
                     finish()
                 } else {
-                    Toast.makeText(this, "Authentication failed: ${task.exception?.message}",
+                    Toast.makeText(this, "Email or password is incorrect",
                         Toast.LENGTH_SHORT).show()
                 }
             }

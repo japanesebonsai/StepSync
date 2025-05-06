@@ -25,10 +25,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 class SettingsActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private val PREFS_NAME = "step_sync_prefs"
+    private var currentUserId: String = ""
     
     // Constants for preference keys
     private val KEY_STEP_LENGTH = "step_length"
-    private val KEY_DAILY_STEP_GOAL = "daily_step_goal"
+    private val KEY_DAILY_STEP_GOAL = "daily_step_goal" // Base key, will be prefixed with user ID
     private val KEY_UNITS = "units"
     private val KEY_THEME = "theme"
     private val KEY_NOTIFICATIONS = "notifications"
@@ -48,6 +49,10 @@ class SettingsActivity : AppCompatActivity() {
 
         sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         
+        // Get current user ID
+        val app = application as? MyApplication
+        currentUserId = app?.firebaseAuth?.currentUser?.uid ?: ""
+        
         val textStepLengthValue = findViewById<TextView>(R.id.text_step_length_value)
         val textDailyGoalValue = findViewById<TextView>(R.id.text_daily_goal_value)
         val autoCompleteUnits = findViewById<AutoCompleteTextView>(R.id.auto_complete_units)
@@ -65,7 +70,7 @@ class SettingsActivity : AppCompatActivity() {
 
         // Load current settings
         val stepLength = sharedPreferences.getInt(KEY_STEP_LENGTH, DEFAULT_STEP_LENGTH)
-        val dailyStepGoal = sharedPreferences.getInt(KEY_DAILY_STEP_GOAL, DEFAULT_STEP_GOAL)
+        val dailyStepGoal = sharedPreferences.getInt("${currentUserId}_${KEY_DAILY_STEP_GOAL}", DEFAULT_STEP_GOAL)
         val units = sharedPreferences.getString(KEY_UNITS, DEFAULT_UNITS)
         val theme = sharedPreferences.getString(KEY_THEME, DEFAULT_THEME)
         val notificationsEnabled = sharedPreferences.getBoolean(KEY_NOTIFICATIONS, DEFAULT_NOTIFICATIONS)
@@ -167,7 +172,7 @@ class SettingsActivity : AppCompatActivity() {
                 .setTitle("Set Daily Step Goal")
                 .setItems(items) { _, which ->
                     val newStepGoal = values[which]
-                    sharedPreferences.edit().putInt(KEY_DAILY_STEP_GOAL, newStepGoal).apply()
+                    sharedPreferences.edit().putInt("${currentUserId}_${KEY_DAILY_STEP_GOAL}", newStepGoal).apply()
                     textDailyGoalValue.text = "${formatter.format(newStepGoal)} steps"
                     Toast.makeText(this, "Daily goal set to ${items[which]}", Toast.LENGTH_SHORT).show()
                 }

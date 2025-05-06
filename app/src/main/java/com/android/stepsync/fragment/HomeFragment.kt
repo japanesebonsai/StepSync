@@ -55,6 +55,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var dailyTotalSteps = 0
     private var distanceUnit = "km"
     private var lastResetDateMillis = 0L
+    private var currentUserId: String = ""
     
     private val unitsChangedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -110,8 +111,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
                         dailyTotalSteps += activitySteps
                         sharedPreferences.edit()
-                            .putInt("daily_total_steps", dailyTotalSteps)
-                            .putInt("current_activity_steps", 0) // Reset current activity
+                            .putInt("${currentUserId}_daily_total_steps", dailyTotalSteps)
+                            .putInt("${currentUserId}_current_activity_steps", 0) // Reset current activity
                             .apply()
 
                         // Update the UI directly
@@ -136,7 +137,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         android.util.Log.d(TAG, "onViewCreated called")
 
         sharedPreferences = requireActivity().getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
-        dailyStepGoal = sharedPreferences.getInt("daily_step_goal", DEFAULT_STEP_GOAL)
+        
+        // Get current user ID
+        val app = activity?.application as? MyApplication
+        currentUserId = app?.firebaseAuth?.currentUser?.uid ?: ""
+        
+        // Load user-specific daily step goal
+        dailyStepGoal = sharedPreferences.getInt("${currentUserId}_daily_step_goal", DEFAULT_STEP_GOAL)
         
         // Load the daily total steps and check if we need to reset for a new day
         checkAndResetDailySteps()
@@ -369,7 +376,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .setTitle("Set Daily Step Goal")
             .setItems(items) { _, which ->
                 dailyStepGoal = values[which]
-                sharedPreferences.edit().putInt("daily_step_goal", dailyStepGoal).apply()
+                sharedPreferences.edit().putInt("${currentUserId}_daily_step_goal", dailyStepGoal).apply()
                 progressSteps.max = dailyStepGoal
                 updateStepProgress(currentStepCount)
                 val formatter = NumberFormat.getNumberInstance(Locale.US)
@@ -383,7 +390,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         
         // Add new steps to daily total (only if this is higher than current value to avoid duplicates)
         if (steps > 0) {
-            val previousActivitySteps = sharedPreferences.getInt("current_activity_steps", 0)
+            val previousActivitySteps = sharedPreferences.getInt("${currentUserId}_current_activity_steps", 0)
             
             // If this is a new value and higher than previous, update the daily total
             if (steps > previousActivitySteps) {
@@ -392,8 +399,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 
                 // Save the new activity steps and daily total
                 sharedPreferences.edit()
-                    .putInt("current_activity_steps", steps)
-                    .putInt("daily_total_steps", dailyTotalSteps)
+                    .putInt("${currentUserId}_current_activity_steps", steps)
+                    .putInt("${currentUserId}_daily_total_steps", dailyTotalSteps)
                     .apply()
                     
                 android.util.Log.d(TAG, "Daily total steps updated: $dailyTotalSteps (added $additionalSteps from current activity)")
@@ -415,7 +422,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
      */
     private fun checkAndResetDailySteps() {
         val currentTimeMillis = System.currentTimeMillis()
-        val lastResetMillis = sharedPreferences.getLong("last_daily_steps_reset", 0L)
+        val lastResetMillis = sharedPreferences.getLong("${currentUserId}_last_daily_steps_reset", 0L)
         
         // Get today's date at midnight
         val calendar = Calendar.getInstance()
@@ -432,15 +439,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             android.util.Log.d(TAG, "New day detected - resetting daily step counter")
             dailyTotalSteps = 0
             sharedPreferences.edit()
-                .putInt("daily_total_steps", 0)
-                .putInt("current_activity_steps", 0)
-                .putLong("last_daily_steps_reset", currentTimeMillis)
+                .putInt("${currentUserId}_daily_total_steps", 0)
+                .putInt("${currentUserId}_current_activity_steps", 0)
+                .putLong("${currentUserId}_last_daily_steps_reset", currentTimeMillis)
                 .apply()
             
             lastResetDateMillis = currentTimeMillis
         } else {
             // Same day, load the existing total
-            dailyTotalSteps = sharedPreferences.getInt("daily_total_steps", 0)
+            dailyTotalSteps = sharedPreferences.getInt("${currentUserId}_daily_total_steps", 0)
             android.util.Log.d(TAG, "Loaded existing daily step counter: $dailyTotalSteps")
             lastResetDateMillis = lastResetMillis
         }
@@ -586,7 +593,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     
                     // Update the daily step count with these test steps
                     dailyTotalSteps += testSteps
-                    sharedPreferences.edit().putInt("daily_total_steps", dailyTotalSteps).apply()
+                    sharedPreferences.edit().putInt("${currentUserId}_daily_total_steps", dailyTotalSteps).apply()
                     
                     // Update the UI directly
                     val formatter = NumberFormat.getNumberInstance(Locale.US)
