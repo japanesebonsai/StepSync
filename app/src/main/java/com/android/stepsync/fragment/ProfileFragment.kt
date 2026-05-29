@@ -1,6 +1,5 @@
 package com.android.stepsync.fragment
 
-import ActivitiesAdapter
 import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.stepsync.R
 import com.android.stepsync.app.MyApplication
 import com.android.stepsync.data.ActivityRecord
+import com.android.stepsync.helper.ActivitiesAdapter
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -96,7 +96,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                val oldSize = activityList.size
                 activityList.clear()
+                if (oldSize > 0) {
+                    adapter.notifyItemRangeRemoved(0, oldSize)
+                }
+
                 for (child in snapshot.children) {
                     child.getValue(ActivityRecord::class.java)
                         ?.let { activityList.add(it) }
@@ -106,7 +111,9 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 activityList.sortByDescending { it.timestamp }
                 
                 Log.d(TAG, "Loaded ${activityList.size} activities, sorted by newest first")
-                adapter.notifyDataSetChanged()
+                if (activityList.isNotEmpty()) {
+                    adapter.notifyItemRangeInserted(0, activityList.size)
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {

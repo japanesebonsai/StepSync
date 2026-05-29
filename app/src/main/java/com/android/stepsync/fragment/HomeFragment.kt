@@ -5,40 +5,35 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.SettingsActivity
 import com.android.stepsync.app.MyApplication
 import com.android.stepsync.helper.StepTrackingService
 import com.android.stepsync.data.ActivityRecord
+import com.android.stepsync.utils.StepSyncConfig
+import com.android.stepsync.utils.TrackingFormatters
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.CircularProgressIndicator
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
-import java.util.UUID
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
-    private val TAG = "HomeFragment"
-    private val DEFAULT_STEP_GOAL = 10000 // Default daily goal of 10,000 steps
-    
     private lateinit var distanceTextView: TextView
     private lateinit var timeTextView: TextView
     private lateinit var speedTextView: TextView
     private lateinit var statusTextView: TextView
-    private lateinit var paceTextView: TextView
     
     private lateinit var weeklyActivitiesTextView: TextView
     private lateinit var weeklyTimeTextView: TextView
@@ -50,33 +45,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var progressSteps: CircularProgressIndicator
     
     private lateinit var sharedPreferences: SharedPreferences
-    private var dailyStepGoal = DEFAULT_STEP_GOAL
+    private var dailyStepGoal = StepSyncConfig.DEFAULT_DAILY_STEP_GOAL
     private var currentStepCount = 0
     private var dailyTotalSteps = 0
     private var distanceUnit = "km"
-    private var lastResetDateMillis = 0L
     private var currentUserId: String = ""
-    
-    private val unitsChangedReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == "com.android.stepsync.UNITS_CHANGED") {
-                val unitType = intent.getStringExtra("unit_type") ?: "Kilometers (km)"
-                updateDisplayUnits(unitType)
-                
-                // Update the displayed values with new units
-                val isTracking = sharedPreferences.getBoolean("is_tracking", false)
-                val distance = sharedPreferences.getFloat("current_distance", 0f)
-                val speed = sharedPreferences.getFloat("current_speed", 0f)
-                
-                updateDistanceDisplay(distance)
-                updateSpeedDisplay(speed)
-                updateStatusDisplay(isTracking)
-                
-                // Reload weekly stats to apply new units
-                loadWeeklyStats()
-            }
-        }
-    }
     
     private val trackingUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -88,10 +61,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 StepTrackingService.ACTION_DISTANCE_UPDATE -> {
                     val distance = intent.getFloatExtra(StepTrackingService.EXTRA_DISTANCE, 0f)
                     updateDistanceDisplay(distance)
-                    
-                    // Estimate steps using the user's step length setting
-                    val stepLengthCm = sharedPreferences.getInt("step_length", 65) // Default 65cm
-                    val stepsPerKm = (100000 / stepLengthCm) // 100,000 cm per km / step length in cm
+
+                    val stepLengthCm = sharedPreferences.getInt(
+                        StepSyncConfig.KEY_STEP_LENGTH,
+                        StepSyncConfig.DEFAULT_STEP_LENGTH_CM
+                    )
+                    val stepsPerKm = TrackingFormatters.stepsPerKm(stepLengthCm)
                     val estimatedSteps = (distance * stepsPerKm).toInt()
                     updateStepProgress(estimatedSteps)
                 }
@@ -104,27 +79,29 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     updateStatusDisplay(isTracking)
                 }
                 ACTION_ACTIVITY_COMPLETED -> {
-                    // If an activity was completed, get the steps from it
                     val activitySteps = intent.getIntExtra("activity_steps", 0)
                     if (activitySteps > 0) {
-                        android.util.Log.d(TAG, "Activity completed with $activitySteps steps")
-
                         dailyTotalSteps += activitySteps
                         sharedPreferences.edit()
-                            .putInt("${currentUserId}_daily_total_steps", dailyTotalSteps)
-                            .putInt("${currentUserId}_current_activity_steps", 0) // Reset current activity
+                            .putInt(userKey(StepSyncConfig.KEY_DAILY_TOTAL_STEPS), dailyTotalSteps)
+                            .putInt(userKey(StepSyncConfig.KEY_CURRENT_ACTIVITY_STEPS), 0)
                             .apply()
 
-                        // Update the UI directly
-                        val formatter = NumberFormat.getNumberInstance(Locale.US)
-                        stepsCountTextView.text = formatter.format(dailyTotalSteps)
-                        
-                        val percentage = if (dailyStepGoal > 0) (dailyTotalSteps * 100 / dailyStepGoal) else 0
-                        goalPercentageTextView.text = "$percentage% of ${formatter.format(dailyStepGoal)} steps"
-                        
-                        progressSteps.progress = dailyTotalSteps.coerceAtMost(dailyStepGoal)
+                        renderDailyStepProgress()
                     }
                     
+                    loadWeeklyStats()
+                }
+                StepSyncConfig.ACTION_UNITS_CHANGED -> {
+                    val unitType = intent.getStringExtra(StepSyncConfig.EXTRA_UNIT_TYPE)
+                    updateDisplayUnits(unitType)
+                    val isTracking = sharedPreferences.getBoolean(StepTrackingService.PREF_IS_TRACKING, false)
+                    val distance = sharedPreferences.getFloat(StepSyncConfig.KEY_CURRENT_DISTANCE, 0f)
+                    val speed = sharedPreferences.getFloat(StepSyncConfig.KEY_CURRENT_SPEED, 0f)
+
+                    updateDistanceDisplay(distance)
+                    updateSpeedDisplay(speed)
+                    updateStatusDisplay(isTracking)
                     loadWeeklyStats()
                 }
             }
@@ -134,46 +111,32 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        android.util.Log.d(TAG, "onViewCreated called")
-
-        sharedPreferences = requireActivity().getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
-        
-        // Get current user ID
+        sharedPreferences = requireActivity().getSharedPreferences(StepSyncConfig.PREFS_NAME, Context.MODE_PRIVATE)
         val app = activity?.application as? MyApplication
         currentUserId = app?.firebaseAuth?.currentUser?.uid ?: ""
         
-        // Load user-specific daily step goal
-        dailyStepGoal = sharedPreferences.getInt("${currentUserId}_daily_step_goal", DEFAULT_STEP_GOAL)
-        
-        // Load the daily total steps and check if we need to reset for a new day
+        dailyStepGoal = sharedPreferences.getInt(
+            userKey(StepSyncConfig.KEY_DAILY_STEP_GOAL),
+            StepSyncConfig.DEFAULT_DAILY_STEP_GOAL
+        )
         checkAndResetDailySteps()
 
-        // Get preferred units
-        val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
-        updateDisplayUnits(unitPreference ?: "Kilometers (km)")
+        val unitPreference = sharedPreferences.getString(
+            StepSyncConfig.KEY_UNITS,
+            StepSyncConfig.DEFAULT_UNITS
+        )
+        updateDisplayUnits(unitPreference)
 
         distanceTextView = view.findViewById(R.id.text_home_distance)
         timeTextView = view.findViewById(R.id.text_home_time)
         speedTextView = view.findViewById(R.id.text_home_speed)
         statusTextView = view.findViewById(R.id.text_home_status)
 
-//        // Try to find pace TextView if it exists in the layout
-//        try {
-//            paceTextView = view.findViewById(R.id.text_home_pace)
-//        } catch (e: Exception) {
-//            android.util.Log.d(TAG, "Pace TextView not found in layout")
-//        }
-        
         weeklyActivitiesTextView = view.findViewById(R.id.text_activities)
         weeklyTimeTextView = view.findViewById(R.id.text_time)
         weeklyDistanceTextView = view.findViewById(R.id.text_distance)
         
-        // Try to find weekly pace TextView if it exists in the layout
-        try {
-            weeklyPaceTextView = view.findViewById(R.id.text_pace)
-        } catch (e: Exception) {
-            android.util.Log.d(TAG, "Weekly pace TextView not found in layout")
-        }
+        view.findViewById<TextView?>(R.id.text_pace)?.let { weeklyPaceTextView = it }
         
         stepsCountTextView = view.findViewById(R.id.text_step_count)
         goalPercentageTextView = view.findViewById(R.id.text_goal_percentage)
@@ -188,49 +151,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             val intent = Intent(requireContext(), SettingsActivity::class.java)
             startActivity(intent)
         }
-
-        // DEBUGGING TOOL
-        /*
-        buttonSettings.setOnLongClickListener {
-            android.util.Log.d(TAG, "Long press on settings button - creating test activity")
-            createTestActivity()
-            true
-        }
-
-         */
         
         buttonSetGoal.setOnClickListener {
             showStepGoalDialog()
         }
-
-        // DEBUGGING TOOL
-        /*
-        weeklyActivitiesTextView.setOnClickListener {
-            android.util.Log.d(TAG, "Activities TextView clicked - forcing reload of stats")
-            loadWeeklyStats()
-        }
-         */
         
         stepsCountTextView.setOnLongClickListener {
             showStepGoalDialog()
             true
         }
-
-        // DEBUGGING TOOL
-        /*
-        weeklyActivitiesTextView.setOnLongClickListener {
-            AlertDialog.Builder(requireContext())
-                .setTitle("Delete All Activities")
-                .setMessage("This will delete ALL your activity records. This action cannot be undone. Continue?")
-                .setPositiveButton("Yes, Delete All") { _, _ ->
-                    deleteAllActivities()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-            true
-        }
-         */
-
         
         updateStepProgress(currentStepCount)
         
@@ -251,26 +180,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             addAction(StepTrackingService.ACTION_SPEED_UPDATE)
             addAction(StepTrackingService.ACTION_TRACKING_STATUS)
             addAction(ACTION_ACTIVITY_COMPLETED)
-            addAction("com.android.stepsync.UNITS_CHANGED")
+            addAction(StepSyncConfig.ACTION_UNITS_CHANGED)
         }
         
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(trackingUpdateReceiver, intentFilter)
-            
-        // Also register for global broadcasts (for unit changes from settings)
-        // Use RECEIVER_NOT_EXPORTED flag for Android 14+ compatibility
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requireActivity().registerReceiver(
-                unitsChangedReceiver, 
-                IntentFilter("com.android.stepsync.UNITS_CHANGED"),
-                Context.RECEIVER_NOT_EXPORTED
-            )
-        } else {
-            requireActivity().registerReceiver(
-                unitsChangedReceiver, 
-                IntentFilter("com.android.stepsync.UNITS_CHANGED")
-            )
-        }
+        ContextCompat.registerReceiver(
+            requireContext(),
+            trackingUpdateReceiver,
+            intentFilter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
             
         requestTrackingStatus()
         loadWeeklyStats()
@@ -279,17 +197,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onPause() {
         super.onPause()
         
-        LocalBroadcastManager.getInstance(requireContext())
-            .unregisterReceiver(trackingUpdateReceiver)
-            
         try {
-            requireActivity().unregisterReceiver(unitsChangedReceiver)
-        } catch (e: Exception) {
-            // Receiver might not be registered
+            requireActivity().unregisterReceiver(trackingUpdateReceiver)
+        } catch (_: IllegalArgumentException) {
         }
     }
     
     private fun requestTrackingStatus() {
+        if (!sharedPreferences.getBoolean(StepTrackingService.PREF_IS_TRACKING, false)) {
+            updateStatusDisplay(false)
+            return
+        }
+
         val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
             action = StepTrackingService.ACTION_REQUEST_STATUS
         }
@@ -297,71 +216,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
     
     private fun updateTimeDisplay(timeInSeconds: Long) {
-        val hours = timeInSeconds / 3600
-        val minutes = (timeInSeconds % 3600) / 60
-        val seconds = timeInSeconds % 60
-
-        // Format time to include seconds, especially for short durations
-        timeTextView.text = when {
-            hours > 0 -> String.format(Locale.getDefault(), "%dh %dm", hours, minutes)
-            minutes > 0 -> String.format(Locale.getDefault(), "%dm %ds", minutes, seconds)
-            else -> String.format(Locale.getDefault(), "%ds", seconds)
-        }
-        
-        // Save current time for pace calculations
-        sharedPreferences.edit().putLong("current_time_seconds", timeInSeconds).apply()
-
-//        // Update pace after time change if we have distance data
-//        if (::paceTextView.isInitialized) {
-//            val distanceKm = sharedPreferences.getFloat("current_distance", 0f)
-//            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
-//            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
-//                distanceKm, timeInSeconds, unitPreference ?: "Kilometers (km)")
-//            paceTextView.text = pace
-//        }
+        timeTextView.text = TrackingFormatters.formatCompactDuration(timeInSeconds)
+        sharedPreferences.edit().putLong(StepSyncConfig.KEY_CURRENT_TIME_SECONDS, timeInSeconds).apply()
     }
     
     private fun updateDistanceDisplay(distanceInKm: Float) {
-        // Convert based on selected unit
-        val converted = when {
-            distanceUnit == "mi" -> distanceInKm * 0.621371f // km to miles
-            else -> distanceInKm // Already in km
-        }
-        
-        distanceTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, distanceUnit)
-        
-        // Save current distance for potential unit conversion updates
-        sharedPreferences.edit().putFloat("current_distance", distanceInKm).apply()
-
-//        // Update pace display if the TextView exists
-//        if (::paceTextView.isInitialized) {
-//            val timeSeconds = sharedPreferences.getLong("current_time_seconds", 0L)
-//            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
-//            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
-//                distanceInKm, timeSeconds, unitPreference ?: "Kilometers (km)")
-//            paceTextView.text = pace
-//        }
+        distanceTextView.text = TrackingFormatters.formatDistance(distanceInKm, distanceUnit)
+        sharedPreferences.edit().putFloat(StepSyncConfig.KEY_CURRENT_DISTANCE, distanceInKm).apply()
     }
     
     private fun updateSpeedDisplay(speedInKmh: Float) {
-        // Convert based on selected unit
-        val converted = when {
-            distanceUnit == "mi" -> speedInKmh * 0.621371f // km/h to mph
-            else -> speedInKmh // Already in km/h
-        }
-        
-        val unitText = if (distanceUnit == "mi") "mph" else "km/h"
-        
-        // Ensure consistent display with proper spacing
-        if (converted < 10) {
-            // Add extra space for single digit speeds to improve alignment
-            speedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
-        } else {
-            speedTextView.text = String.format(Locale.getDefault(), "%.2f %s", converted, unitText)
-        }
-        
-        // Save current speed for potential unit conversion updates
-        sharedPreferences.edit().putFloat("current_speed", speedInKmh).apply()
+        speedTextView.text = TrackingFormatters.formatSpeed(speedInKmh, distanceUnit)
+        sharedPreferences.edit().putFloat(StepSyncConfig.KEY_CURRENT_SPEED, speedInKmh).apply()
     }
     
     private fun updateStatusDisplay(isTracking: Boolean) {
@@ -376,7 +242,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .setTitle("Set Daily Step Goal")
             .setItems(items) { _, which ->
                 dailyStepGoal = values[which]
-                sharedPreferences.edit().putInt("${currentUserId}_daily_step_goal", dailyStepGoal).apply()
+                sharedPreferences.edit().putInt(userKey(StepSyncConfig.KEY_DAILY_STEP_GOAL), dailyStepGoal).apply()
                 progressSteps.max = dailyStepGoal
                 updateStepProgress(currentStepCount)
                 val formatter = NumberFormat.getNumberInstance(Locale.US)
@@ -390,24 +256,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         
         // Add new steps to daily total (only if this is higher than current value to avoid duplicates)
         if (steps > 0) {
-            val previousActivitySteps = sharedPreferences.getInt("${currentUserId}_current_activity_steps", 0)
+            val previousActivitySteps = sharedPreferences.getInt(userKey(StepSyncConfig.KEY_CURRENT_ACTIVITY_STEPS), 0)
             
-            // If this is a new value and higher than previous, update the daily total
             if (steps > previousActivitySteps) {
                 val additionalSteps = steps - previousActivitySteps
                 dailyTotalSteps += additionalSteps
                 
-                // Save the new activity steps and daily total
                 sharedPreferences.edit()
-                    .putInt("${currentUserId}_current_activity_steps", steps)
-                    .putInt("${currentUserId}_daily_total_steps", dailyTotalSteps)
+                    .putInt(userKey(StepSyncConfig.KEY_CURRENT_ACTIVITY_STEPS), steps)
+                    .putInt(userKey(StepSyncConfig.KEY_DAILY_TOTAL_STEPS), dailyTotalSteps)
                     .apply()
-                    
-                android.util.Log.d(TAG, "Daily total steps updated: $dailyTotalSteps (added $additionalSteps from current activity)")
             }
         }
-        
-        // Display total daily steps instead of just current activity
+        renderDailyStepProgress()
+    }
+
+    private fun renderDailyStepProgress() {
         val formatter = NumberFormat.getNumberInstance(Locale.US)
         stepsCountTextView.text = formatter.format(dailyTotalSteps)
         
@@ -417,14 +281,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         progressSteps.progress = dailyTotalSteps.coerceAtMost(dailyStepGoal)
     }
     
-    /**
-     * Check if we need to reset the daily step counter (at midnight)
-     */
     private fun checkAndResetDailySteps() {
         val currentTimeMillis = System.currentTimeMillis()
-        val lastResetMillis = sharedPreferences.getLong("${currentUserId}_last_daily_steps_reset", 0L)
+        val lastResetMillis = sharedPreferences.getLong(userKey(StepSyncConfig.KEY_LAST_DAILY_STEPS_RESET), 0L)
         
-        // Get today's date at midnight
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = currentTimeMillis
         calendar.set(Calendar.HOUR_OF_DAY, 0)
@@ -433,28 +293,20 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         calendar.set(Calendar.MILLISECOND, 0)
         val todayMidnightMillis = calendar.timeInMillis
         
-        // Check if we last reset before today's midnight
         if (lastResetMillis < todayMidnightMillis) {
-            // It's a new day, reset the counter
-            android.util.Log.d(TAG, "New day detected - resetting daily step counter")
             dailyTotalSteps = 0
             sharedPreferences.edit()
-                .putInt("${currentUserId}_daily_total_steps", 0)
-                .putInt("${currentUserId}_current_activity_steps", 0)
-                .putLong("${currentUserId}_last_daily_steps_reset", currentTimeMillis)
+                .putInt(userKey(StepSyncConfig.KEY_DAILY_TOTAL_STEPS), 0)
+                .putInt(userKey(StepSyncConfig.KEY_CURRENT_ACTIVITY_STEPS), 0)
+                .putLong(userKey(StepSyncConfig.KEY_LAST_DAILY_STEPS_RESET), currentTimeMillis)
                 .apply()
             
-            lastResetDateMillis = currentTimeMillis
         } else {
-            // Same day, load the existing total
-            dailyTotalSteps = sharedPreferences.getInt("${currentUserId}_daily_total_steps", 0)
-            android.util.Log.d(TAG, "Loaded existing daily step counter: $dailyTotalSteps")
-            lastResetDateMillis = lastResetMillis
+            dailyTotalSteps = sharedPreferences.getInt(userKey(StepSyncConfig.KEY_DAILY_TOTAL_STEPS), 0)
         }
     }
     
     fun loadWeeklyStats() {
-        android.util.Log.d(TAG, "loadWeeklyStats called")
         val currentUser = (requireActivity().application as MyApplication).firebaseAuth.currentUser
         
         if (currentUser != null) {
@@ -472,190 +324,61 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
             val startOfWeekMillis = calendar.timeInMillis
             
-            android.util.Log.d(TAG, "Loading weekly stats for user: $userId, starting from: $startOfWeekMillis")
+            dbRef.orderByChild("timestamp")
+                .startAt(startOfWeekMillis.toDouble())
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        var totalActivities = 0
+                        var totalTimeSeconds = 0L
+                        var totalDistanceKm = 0f
+                        for (activitySnapshot in snapshot.children) {
+                            val activity = activitySnapshot.getValue(ActivityRecord::class.java)
+                            activity?.let {
+                                totalActivities++
+                                totalTimeSeconds += it.durationSeconds
+                                totalDistanceKm += it.distanceKm
+                            } ?: Log.w(TAG, "Failed to parse weekly activity ${activitySnapshot.key}")
+                        }
 
-            dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(allActivitiesSnapshot: DataSnapshot) {
-                    android.util.Log.d(TAG, "All activities data snapshot size: ${allActivitiesSnapshot.childrenCount}")
+                        activity?.runOnUiThread {
+                            updateWeeklyStats(totalActivities, totalTimeSeconds, totalDistanceKm)
+                        }
+                    }
 
-                    if (allActivitiesSnapshot.childrenCount > 0) {
-                        dbRef.orderByChild("timestamp")
-                            .startAt(startOfWeekMillis.toDouble())
-                            .addValueEventListener(object : ValueEventListener {
-                                override fun onDataChange(snapshot: DataSnapshot) {
-                                    var totalActivities = 0
-                                    var totalTimeSeconds = 0L
-                                    var totalDistanceKm = 0f
-                                    
-                                    android.util.Log.d(TAG, "Weekly data snapshot size: ${snapshot.childrenCount}")
-                                    
-                                    for (activitySnapshot in snapshot.children) {
-                                        android.util.Log.d(TAG, "Processing activity with key: ${activitySnapshot.key}")
-                                        
-                                        val activity = activitySnapshot.getValue(ActivityRecord::class.java)
-                                        activity?.let {
-                                            android.util.Log.d(TAG, "Activity found: id=${it.id}, time=${it.durationSeconds}s, distance=${it.distanceKm}km, timestamp=${it.timestamp}")
-                                            totalActivities++
-                                            totalTimeSeconds += it.durationSeconds
-                                            totalDistanceKm += it.distanceKm
-                                        } ?: android.util.Log.e(TAG, "Failed to parse activity from snapshot")
-                                    }
-                                    
-                                    android.util.Log.d(TAG, "Weekly stats totals: activities=$totalActivities, time=${totalTimeSeconds}s, distance=${totalDistanceKm}km")
-
-                                    activity?.runOnUiThread {
-                                        updateWeeklyStats(totalActivities, totalTimeSeconds, totalDistanceKm)
-                                    }
-                                }
-                                
-                                override fun onCancelled(error: DatabaseError) {
-                                    android.util.Log.e(TAG, "Database error: ${error.message}")
-                                    updateWeeklyStats(0, 0, 0f)
-                                }
-                            })
-                    } else {
-                        android.util.Log.d(TAG, "No activities found in database for this user")
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e(TAG, "Failed to load weekly stats: ${error.message}")
                         updateWeeklyStats(0, 0, 0f)
                     }
-                }
-                
-                override fun onCancelled(error: DatabaseError) {
-                    android.util.Log.e(TAG, "Database error when checking all activities: ${error.message}")
-                    updateWeeklyStats(0, 0, 0f)
-                }
-            })
+                })
         } else {
-            android.util.Log.d(TAG, "No user logged in, showing zeros")
             updateWeeklyStats(0, 0, 0f)
         }
     }
     
     private fun updateWeeklyStats(activities: Int, timeSeconds: Long, distanceKm: Float) {
-        android.util.Log.d(TAG, "Updating UI with stats: activities=$activities, timeSeconds=$timeSeconds, distanceKm=$distanceKm")
-        
         weeklyActivitiesTextView.text = activities.toString()
-
-        val hours = timeSeconds / 3600
-        val minutes = (timeSeconds % 3600) / 60
-        weeklyTimeTextView.text = String.format(Locale.getDefault(), "%dh %dm", hours, minutes)
-
-        // Convert distance units if needed
-        val convertedDistance = when {
-            distanceUnit == "mi" -> distanceKm * 0.621371f // km to miles
-            else -> distanceKm // Already in km
-        }
-        
-        weeklyDistanceTextView.text = String.format(Locale.getDefault(), "%.2f %s", 
-            convertedDistance, distanceUnit)
+        weeklyTimeTextView.text = TrackingFormatters.formatHoursAndMinutes(timeSeconds)
+        weeklyDistanceTextView.text = TrackingFormatters.formatDistance(distanceKm, distanceUnit)
             
-        // Update weekly pace if the TextView exists
         if (::weeklyPaceTextView.isInitialized && activities > 0) {
-            val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
-            val pace = com.android.stepsync.activity.SettingsActivity.calculatePace(
-                distanceKm, timeSeconds, unitPreference ?: "Kilometers (km)")
-            weeklyPaceTextView.text = pace
-        }
-    }
-
-    private fun createTestActivity() {
-        val currentUser = (requireActivity().application as MyApplication).firebaseAuth.currentUser
-        
-        if (currentUser != null) {
-            val userId = currentUser.uid
-            val activityId = "test_" + UUID.randomUUID().toString()
-            val timestamp = System.currentTimeMillis()
-            
-            android.util.Log.d(TAG, "Creating test activity: userId=$userId, timestamp=$timestamp")
-
-            // Calculate steps for this test activity
-            val testDistanceKm = 0.2f
-            val stepLengthCm = sharedPreferences.getInt("step_length", 65) // Default 65cm
-            val stepsPerKm = (100000 / stepLengthCm) // 100,000 cm per km / step length in cm
-            val testSteps = (testDistanceKm * stepsPerKm).toInt()
-
-            val activityRecord = ActivityRecord(
-                id = activityId,
-                userId = userId,
-                timestamp = timestamp,
-                durationSeconds = 30L,
-                distanceKm = testDistanceKm,
-                avgSpeedKmh = 2.4f,
-                steps = testSteps
+            val unitPreference = sharedPreferences.getString(
+                StepSyncConfig.KEY_UNITS,
+                StepSyncConfig.DEFAULT_UNITS
             )
-
-            val dbRef = (requireActivity().application as MyApplication)
-                .database
-                .getReference("user_activities/$userId/$activityId")
-            
-            dbRef.setValue(activityRecord)
-                .addOnSuccessListener {
-                    android.util.Log.d(TAG, "Test activity saved successfully with ID: $activityId")
-                    
-                    // Update the daily step count with these test steps
-                    dailyTotalSteps += testSteps
-                    sharedPreferences.edit().putInt("${currentUserId}_daily_total_steps", dailyTotalSteps).apply()
-                    
-                    // Update the UI directly
-                    val formatter = NumberFormat.getNumberInstance(Locale.US)
-                    stepsCountTextView.text = formatter.format(dailyTotalSteps)
-                    
-                    val percentage = if (dailyStepGoal > 0) (dailyTotalSteps * 100 / dailyStepGoal) else 0
-                    goalPercentageTextView.text = "$percentage% of ${formatter.format(dailyStepGoal)} steps"
-                    
-                    progressSteps.progress = dailyTotalSteps.coerceAtMost(dailyStepGoal)
-                    
-                    Toast.makeText(context, "Test activity created (+$testSteps steps)", Toast.LENGTH_SHORT).show()
-                    loadWeeklyStats()
-                }
-                .addOnFailureListener { e ->
-                    android.util.Log.e(TAG, "Error saving test activity: ${e.message}")
-                    Toast.makeText(context, "Failed to create test activity: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+            weeklyPaceTextView.text = TrackingFormatters.formatPace(distanceKm, timeSeconds, unitPreference)
         }
     }
 
-    private fun deleteAllActivities() {
-        val currentUser = (requireActivity().application as MyApplication).firebaseAuth.currentUser
-        
-        if (currentUser != null) {
-            val userId = currentUser.uid
-            android.util.Log.d(TAG, "Deleting all activities for user $userId")
-            
-            val dbRef = (requireActivity().application as MyApplication)
-                .database
-                .getReference("user_activities/$userId")
-                
-            dbRef.removeValue()
-                .addOnSuccessListener {
-                    android.util.Log.d(TAG, "All activities deleted successfully")
-                    Toast.makeText(context, "All activities deleted", Toast.LENGTH_SHORT).show()
-                    updateWeeklyStats(0, 0, 0f)
-                }
-                .addOnFailureListener { e ->
-                    android.util.Log.e(TAG, "Error deleting activities: ${e.message}")
-                    Toast.makeText(context, "Failed to delete activities: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-        }
+    private fun updateDisplayUnits(unitType: String?) {
+        distanceUnit = TrackingFormatters.distanceUnitCode(unitType)
     }
-    
-    private fun updateDisplayUnits(unitType: String) {
-        distanceUnit = when (unitType) {
-            "Miles (mi)" -> "mi"
-            else -> "km" // Default to metric
-        }
+
+    private fun userKey(key: String): String {
+        return StepSyncConfig.userScopedKey(currentUserId, key)
     }
-    
-    private fun isLongDistance(): Boolean {
-        // No longer needed since we removed the mixed unit option
-        return false
-    }
-    
-    private fun estimateStepsFromDistance(distanceKm: Float): Int {
-        // No longer needed since we removed the steps only option
-        return 0
-    }
-    
+
     companion object {
+        private const val TAG = "HomeFragment"
         const val ACTION_ACTIVITY_COMPLETED = "com.android.stepsync.ACTIVITY_COMPLETED"
     }
 }

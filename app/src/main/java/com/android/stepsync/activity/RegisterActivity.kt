@@ -1,12 +1,9 @@
 package com.android.stepsync.activity
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +16,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
+import java.util.Locale
 
 class RegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,34 +55,36 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Email format validation
+            if (username.contains(Regex("""[.#$/\[\]]"""))) {
+                usernameLayout.error = "Username contains unsupported characters"
+                return@setOnClickListener
+            }
+
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 emailLayout.error = "Enter a valid email address"
                 return@setOnClickListener
             }
 
-            // Password length validation
             if (password.length < 8) {
                 passwordLayout.error = "Password must be at least 8 characters"
                 return@setOnClickListener
             }
 
-            // Password match validation
             if (password != confirm) {
                 confirmLayout.error = "Passwords do not match"
                 return@setOnClickListener
             }
 
-            // Unique username check in Realtime Database
-            val dbRef = (application as MyApplication).database.getReference("users")
-            dbRef.orderByChild("username").equalTo(username)
+            val usernameKey = username.lowercase(Locale.US)
+            val dbRef = (application as MyApplication).database.getReference("usernames/$usernameKey")
+            dbRef
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
                             usernameLayout.error = "Username is already taken"
                         } else {
                             usernameLayout.error = null
-                            registerUser(email, password, username)
+                            registerUser(email, password, username, usernameKey)
                         }
                     }
 
@@ -100,7 +100,7 @@ class RegisterActivity : AppCompatActivity() {
     }
 
 
-    private fun registerUser(email: String, password: String, username: String) {
+    private fun registerUser(email: String, password: String, username: String, usernameKey: String) {
         val auth = (application as MyApplication).firebaseAuth
 
         auth.createUserWithEmailAndPassword(email, password)
@@ -117,7 +117,7 @@ class RegisterActivity : AppCompatActivity() {
                 auth.currentUser
                     ?.getIdToken(true)
                     ?.addOnSuccessListener {
-                        writeNewUserToDatabase(auth.currentUser!!.uid, username, email)
+                        writeNewUserToDatabase(auth.currentUser!!.uid, username, usernameKey, email)
                     }
                     ?.addOnFailureListener { e ->
                         Toast.makeText(
@@ -130,17 +130,23 @@ class RegisterActivity : AppCompatActivity() {
     }
 
 
-    private fun writeNewUserToDatabase(uid: String, username: String, email: String) {
+    private fun writeNewUserToDatabase(uid: String, username: String, usernameKey: String, email: String) {
         val userData = mapOf(
             "username" to username,
             "email" to email,
             "createdAt" to ServerValue.TIMESTAMP,
             "profilePicture" to R.drawable.profile1_icon
         )
+
+        val updates = mapOf(
+            "users/$uid" to userData,
+            "usernames/$usernameKey" to uid
+        )
+
         (application as MyApplication)
             .database
-            .getReference("users/$uid")
-            .setValue(userData)
+            .reference
+            .updateChildren(updates)
             .addOnSuccessListener {
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
