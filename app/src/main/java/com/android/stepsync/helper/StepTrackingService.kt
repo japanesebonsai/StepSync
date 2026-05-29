@@ -15,18 +15,16 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
 import com.android.stepsync.app.MyApplication
-import java.util.Locale
+import com.android.stepsync.utils.StepSyncConfig
+import com.android.stepsync.utils.TrackingFormatters
 import java.util.concurrent.TimeUnit
 
 class StepTrackingService : Service(), SensorEventListener {
-    private val TAG = "StepTrackingService"
-
     companion object {
         const val NOTIFICATION_ID = 1001
         const val NOTIFICATION_CHANNEL_ID = "tracking_channel"
@@ -51,11 +49,10 @@ class StepTrackingService : Service(), SensorEventListener {
         const val EXTRA_IS_PAUSED = "extra_is_paused"
         const val EXTRA_USER_ID = "extra_user_id"
 
-        const val PREFS_NAME = "step_sync_prefs"
+        const val PREFS_NAME = StepSyncConfig.PREFS_NAME
         const val PREF_IS_TRACKING = "is_tracking"
         const val PREF_IS_PAUSED = "is_paused"
 
-        private const val DEFAULT_STEP_LENGTH_CM = 65 // 65 cm
         private const val UPDATE_INTERVAL_MS = 1000L
     }
 
@@ -69,12 +66,8 @@ class StepTrackingService : Service(), SensorEventListener {
     private var currentSteps: Int = 0
     private var totalDistanceKm: Float = 0f
     private var currentSpeedKmh: Float = 0f
-    private var stepLengthMeters: Float = DEFAULT_STEP_LENGTH_CM / 100f
+    private var stepLengthMeters: Float = StepSyncConfig.DEFAULT_STEP_LENGTH_CM / 100f
     private var currentUserId: String = ""
-    
-    // FOR DEBUGGING
-    private val debugMode = false // CHANGE TO TRUE TO GENERATE VIRTUAL STEPS
-    private var debugStepsAdded = 0
 
     private lateinit var sensorManager: SensorManager
     private var stepSensor: Sensor? = null
@@ -84,34 +77,9 @@ class StepTrackingService : Service(), SensorEventListener {
         override fun run() {
             if (isTracking) {
                 updateTracking()
-                if (debugMode) {
-                    addDebugSteps()
-                }
                 handler.postDelayed(this, UPDATE_INTERVAL_MS)
             }
         }
-    }
-
-    private fun addDebugSteps() {
-        val stepsToAdd = (3..5).random()
-        debugStepsAdded += stepsToAdd
-        
-        // Also update currentSteps so speed calculation works
-        currentSteps += stepsToAdd
-
-        val additionalDistanceMeters = stepsToAdd * stepLengthMeters
-        totalDistanceKm += (additionalDistanceMeters / 1000f)
-        
-        // Calculate the speed directly here for virtual steps
-        if (elapsedTimeSeconds > 0) {
-            currentSpeedKmh = (totalDistanceKm / (elapsedTimeSeconds / 3600.0f))
-        }
-
-        broadcastDistanceUpdate()
-        broadcastSpeedUpdate()
-        broadcastStepsUpdate()
-        
-        Log.d(TAG, "Added $stepsToAdd debug steps, total: $debugStepsAdded, distance: $totalDistanceKm km, speed: $currentSpeedKmh km/h")
     }
 
     override fun onCreate() {
@@ -119,20 +87,19 @@ class StepTrackingService : Service(), SensorEventListener {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         
-        // Get current user ID
         val app = application as? MyApplication
         currentUserId = app?.firebaseAuth?.currentUser?.uid ?: ""
         
-        // Load user's preferred step length from settings
         loadStepLengthFromSettings()
     }
 
     private fun loadStepLengthFromSettings() {
         val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val userStepLengthCm = sharedPreferences.getInt("step_length", DEFAULT_STEP_LENGTH_CM)
+        val userStepLengthCm = sharedPreferences.getInt(
+            StepSyncConfig.KEY_STEP_LENGTH,
+            StepSyncConfig.DEFAULT_STEP_LENGTH_CM
+        )
         stepLengthMeters = userStepLengthCm / 100f
-        
-        Log.d(TAG, "Using step length: $userStepLengthCm cm ($stepLengthMeters meters)")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -142,10 +109,8 @@ class StepTrackingService : Service(), SensorEventListener {
             ACTION_PAUSE_TRACKING -> pauseTracking()
             ACTION_RESUME_TRACKING -> resumeTracking()
             ACTION_REQUEST_STATUS -> broadcastCurrentStatus()
-            "com.android.stepsync.UNITS_CHANGED" -> {
-                // Reload step length when units change
+            StepSyncConfig.ACTION_UNITS_CHANGED -> {
                 loadStepLengthFromSettings()
-                Log.d(TAG, "Units changed, reloaded step length: $stepLengthMeters meters")
             }
         }
 
@@ -154,8 +119,6 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun startTracking() {
         if (!isTracking) {
-            Log.d(TAG, "Starting tracking service")
-
             createNotificationChannel()
             val notification = createNotification()
             
@@ -196,8 +159,6 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun stopTracking() {
         if (isTracking) {
-            Log.d(TAG, "Stopping tracking service")
-
             sensorManager.unregisterListener(this)
 
             handler.removeCallbacks(updateRunnable)
@@ -213,62 +174,34 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun pauseTracking() {
         if (isTracking && !isPaused) {
-            Log.d(TAG, "Pausing tracking service")
-
-            // Unregister listener to stop receiving step updates
             sensorManager.unregisterListener(this)
-            
-            // Stop the timer updates
             handler.removeCallbacks(updateRunnable)
-            
-            // Record when we paused
             pausedTimeMillis = System.currentTimeMillis()
-            
-            // Mark as paused
             isPaused = true
-            
-            // Update notification to show paused state
+
             updateNotification()
-            
-            // Broadcast the new status
             broadcastTrackingStatus()
-            
-            Log.d(TAG, "Tracking paused at ${pausedTimeMillis}, elapsed time: ${elapsedTimeSeconds}s")
         }
     }
 
     private fun resumeTracking() {
         if (isTracking && isPaused) {
-            Log.d(TAG, "Resuming tracking service")
-            
-            // Calculate how long we were paused and add to total
             val pauseDuration = System.currentTimeMillis() - pausedTimeMillis
             totalPausedMillis += pauseDuration
-            
-            // Register step listener again
+
             stepSensor?.let {
                 sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
             }
-            
-            // Mark as not paused
+
             isPaused = false
-            
-            // Restart the timer updates
             handler.post(updateRunnable)
-            
-            // Update notification
             updateNotification()
-            
-            // Broadcast the new status
             broadcastTrackingStatus()
-            
-            Log.d(TAG, "Tracking resumed after pause of ${pauseDuration/1000}s, total paused: ${totalPausedMillis/1000}s")
         }
     }
 
     private fun updateTracking() {
         if (!isPaused) {
-            // Calculate elapsed time accounting for paused periods
             elapsedTimeSeconds = TimeUnit.MILLISECONDS.toSeconds(
                 System.currentTimeMillis() - startTimeMillis - totalPausedMillis
             )
@@ -357,12 +290,9 @@ class StepTrackingService : Service(), SensorEventListener {
             val additionalSteps = newSteps - currentSteps
             currentSteps = newSteps
 
-            Log.d(TAG, "Step detected: Additional: $additionalSteps, Total: $currentSteps")
-
             if (additionalSteps > 0) {
                 val additionalDistanceMeters = additionalSteps * stepLengthMeters
                 totalDistanceKm += (additionalDistanceMeters / 1000f)
-                Log.d(TAG, "Distance updated: +${additionalDistanceMeters}m, Total: ${totalDistanceKm}km")
                 broadcastDistanceUpdate()
                 broadcastSpeedUpdate()
                 broadcastStepsUpdate()
@@ -405,20 +335,12 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun updateNotification() {
         val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
-        
-        // Determine the distance text based on unit preference
-        val distanceText = when (unitPreference) {
-            "Miles (mi)" -> {
-                val distanceMiles = totalDistanceKm * 0.621371f
-                String.format(Locale.getDefault(), "%.2f mi", distanceMiles)
-            }
-            else -> {
-                String.format(Locale.getDefault(), "%.2f km", totalDistanceKm)
-            }
-        }
-        
-        // Show different status when paused
+        val unitPreference = sharedPreferences.getString(
+            StepSyncConfig.KEY_UNITS,
+            StepSyncConfig.DEFAULT_UNITS
+        )
+        val distanceUnit = TrackingFormatters.distanceUnitCode(unitPreference)
+        val distanceText = TrackingFormatters.formatDistance(totalDistanceKm, distanceUnit)
         val status = if (isPaused) "PAUSED" else "Recording"
         
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)

@@ -41,10 +41,10 @@ class FullScreenDialogFragment : DialogFragment() {
 
     private var selectedProfilePicture: Int = R.drawable.profile1_icon
     private var originalUsername: String = ""
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-
         return inflater.inflate(R.layout.dialog_editprofile, container, false)
     }
 
@@ -206,26 +206,35 @@ class FullScreenDialogFragment : DialogFragment() {
             "profilePicture" to selectedProfilePicture
         )
 
-        if(password.isNotEmpty()){
-            updates["password"] = password
-        }
-
         if (usernameChanged) {
             updates["username"] = username
             updates["lastUsernameChange"] = ServerValue.TIMESTAMP
         }
 
-
         dbRef.updateChildren(updates)
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
-                dismiss()
+                updatePasswordIfNeeded(currentUser, password)
             }
             .addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Failed to save profile: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
+    private fun updatePasswordIfNeeded(currentUser: com.google.firebase.auth.FirebaseUser, password: String) {
+        if (password.isEmpty()) {
+            Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+            dismiss()
+            return
+        }
 
+        currentUser.updatePassword(password)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                dismiss()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Profile saved, but password update failed: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+    }
 }
 

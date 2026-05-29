@@ -6,12 +6,12 @@ import android.widget.EditText
 import android.widget.Toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-fun Activity.toast(msg: String){
+fun Activity.toast(msg: String) {
     Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
 }
 
-fun EditText.isNotValid(): Boolean{
-    return this.text.toString().isNullOrEmpty()
+fun EditText.isNotValid(): Boolean {
+    return text?.toString().isNullOrBlank()
 }
 
 fun Context.showAlertDialog(
