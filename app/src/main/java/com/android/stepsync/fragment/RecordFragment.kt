@@ -1,7 +1,6 @@
 package com.android.stepsync.fragment
 
 import android.Manifest
-import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -22,13 +21,10 @@ import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
-import com.android.stepsync.activity.SettingsActivity
 import com.android.stepsync.app.MyApplication
 import com.android.stepsync.data.ActivityRecord
-import com.android.stepsync.fragment.HomeFragment
 import com.android.stepsync.helper.StepTrackingService
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -414,7 +410,8 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     }
 
     private fun checkTrackingStatus() {
-        isTracking = isServiceRunning(StepTrackingService::class.java)
+        isTracking = sharedPreferences.getBoolean(StepTrackingService.PREF_IS_TRACKING, false)
+        isPaused = sharedPreferences.getBoolean(StepTrackingService.PREF_IS_PAUSED, false)
         updateUI()
 
         if (isTracking) {
@@ -423,12 +420,6 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             }
             requireContext().startService(serviceIntent)
         }
-    }
-
-    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
-        val manager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return manager.getRunningServices(Integer.MAX_VALUE)
-            .any { it.service.className == serviceClass.name }
     }
 
     private fun updateUI() {

@@ -64,7 +64,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 updateDisplayUnits(unitType)
                 
                 // Update the displayed values with new units
-                val isTracking = sharedPreferences.getBoolean("is_tracking", false)
+                val isTracking = sharedPreferences.getBoolean(StepTrackingService.PREF_IS_TRACKING, false)
                 val distance = sharedPreferences.getFloat("current_distance", 0f)
                 val speed = sharedPreferences.getFloat("current_speed", 0f)
                 
@@ -290,6 +290,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
     
     private fun requestTrackingStatus() {
+        if (!sharedPreferences.getBoolean(StepTrackingService.PREF_IS_TRACKING, false)) {
+            updateStatusDisplay(false)
+            return
+        }
+
         val serviceIntent = Intent(requireContext(), StepTrackingService::class.java).apply {
             action = StepTrackingService.ACTION_REQUEST_STATUS
         }
