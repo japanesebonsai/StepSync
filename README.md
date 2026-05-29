@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/stepsync-logo.png" alt="StepSync logo" width="132" />
+  <img src="docs/assets/stepsync-logo.png" alt="StepSync logo" width="190" />
 </p>
 
 <h1 align="center">StepSync</h1>
