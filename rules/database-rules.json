@@ -1,11 +1,18 @@
 {
   "rules": {
     "users": {
-      ".read": true,
+      ".read": false,
       ".write": false,
       "$uid": {
-        ".read": true,
+        ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid"
+      }
+    },
+    "usernames": {
+      "$username": {
+        ".read": true,
+        ".write": "auth != null && (!data.exists() || data.val() === auth.uid) && newData.val() === auth.uid",
+        ".validate": "$username.matches(/^[A-Za-z0-9_ -]{1,16}$/)"
       }
     },
     "user_activities": {

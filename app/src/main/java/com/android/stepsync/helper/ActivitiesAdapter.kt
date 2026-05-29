@@ -1,3 +1,5 @@
+package com.android.stepsync.helper
+
 import android.content.Context
 import android.content.SharedPreferences
 import android.view.LayoutInflater
@@ -17,10 +19,6 @@ class ActivitiesAdapter(
     private val distanceUnit: String = if (sharedPreferences.getString("units", "Kilometers (km)") == "Miles (mi)") "mi" else "km"
     private val stepLengthCm: Int = sharedPreferences.getInt("step_length", 65) // Default 65cm
     private val stepsPerKm: Int = (100000 / stepLengthCm) // 100,000 cm per km / step length in cm
-
-    companion object {
-        private const val STEPS_PER_KM = 1312
-    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val timeTv: TextView = view.findViewById(R.id.text_time)
@@ -74,8 +72,7 @@ class ActivitiesAdapter(
         val paceSec = ((paceMinPerUnit - paceMin) * 60).toInt()
         holder.paceTv.text = "%d:%02d$paceUnit".format(paceMin, paceSec)
 
-        // Calculate steps using the user's step length setting
-        val steps = (act.distanceKm * stepsPerKm).toInt()
+        val steps = if (act.steps > 0) act.steps else (act.distanceKm * stepsPerKm).toInt()
         holder.stepsTv.text = "$steps"
     }
 }

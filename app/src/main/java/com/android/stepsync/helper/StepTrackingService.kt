@@ -50,6 +50,10 @@ class StepTrackingService : Service(), SensorEventListener {
         const val EXTRA_IS_PAUSED = "extra_is_paused"
         const val EXTRA_USER_ID = "extra_user_id"
 
+        const val PREFS_NAME = "step_sync_prefs"
+        const val PREF_IS_TRACKING = "is_tracking"
+        const val PREF_IS_PAUSED = "is_paused"
+
         private const val DEFAULT_STEP_LENGTH_CM = 65 // 65 cm
         private const val UPDATE_INTERVAL_MS = 1000L
     }
@@ -123,7 +127,7 @@ class StepTrackingService : Service(), SensorEventListener {
     }
 
     private fun loadStepLengthFromSettings() {
-        val sharedPreferences = getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val userStepLengthCm = sharedPreferences.getInt("step_length", DEFAULT_STEP_LENGTH_CM)
         stepLengthMeters = userStepLengthCm / 100f
         
@@ -281,12 +285,22 @@ class StepTrackingService : Service(), SensorEventListener {
     }
 
     private fun broadcastTrackingStatus() {
+        saveTrackingStatus()
+
         val intent = Intent(ACTION_TRACKING_STATUS).apply {
             putExtra(EXTRA_IS_TRACKING, isTracking)
             putExtra(EXTRA_IS_PAUSED, isPaused)
             putExtra(EXTRA_USER_ID, currentUserId)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun saveTrackingStatus() {
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(PREF_IS_TRACKING, isTracking)
+            .putBoolean(PREF_IS_PAUSED, isPaused)
+            .apply()
     }
 
     private fun broadcastTimeUpdate() {
@@ -380,7 +394,7 @@ class StepTrackingService : Service(), SensorEventListener {
     }
 
     private fun updateNotification() {
-        val sharedPreferences = getSharedPreferences("step_sync_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val unitPreference = sharedPreferences.getString("units", "Kilometers (km)")
         
         // Determine the distance text based on unit preference

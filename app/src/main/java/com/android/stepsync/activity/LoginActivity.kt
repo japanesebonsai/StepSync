@@ -3,7 +3,6 @@ package com.android.stepsync.activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -23,6 +22,15 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         prefs = getSharedPreferences("login_prefs", MODE_PRIVATE)
+        prefs.edit().remove("password").apply()
+
+        val auth = (application as MyApplication).firebaseAuth
+
+        if (auth.currentUser != null) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
+        }
 
         val text_register = findViewById<TextView>(R.id.text_register)
         val button_login = findViewById<Button>(R.id.button_login)
@@ -31,13 +39,9 @@ class LoginActivity : AppCompatActivity() {
         val checkRemember = findViewById<CheckBox>(R.id.checkbox_rememberme)
 
         if (prefs.getBoolean("remember", false)) {
-            prefs.getString("email", null)?.let { savedEmail ->
-                prefs.getString("password", null)?.let { savedPassword ->
-                    if (savedEmail.isNotEmpty() && savedPassword.isNotEmpty()) {
-                        loginUser(savedEmail, savedPassword)
-                        return
-                    }
-                }
+            checkRemember.isChecked = true
+            prefs.getString("email", null)?.let {
+                edit_email.setText(it)
             }
         }
 
@@ -58,7 +62,6 @@ class LoginActivity : AppCompatActivity() {
                 prefs.edit()
                     .putBoolean("remember", true)
                     .putString("email", email)
-                    .putString("password", password)
                     .apply()
             } else {
                 prefs.edit().clear().apply()
