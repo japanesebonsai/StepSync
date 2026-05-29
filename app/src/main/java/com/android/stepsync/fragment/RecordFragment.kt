@@ -171,19 +171,12 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         LocalBroadcastManager.getInstance(requireContext())
             .registerReceiver(trackingUpdateReceiver, intentFilter)
             
-        // Also register for global broadcasts (for unit changes from settings)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            requireActivity().registerReceiver(
-                unitsChangedReceiver, 
-                IntentFilter("com.android.stepsync.UNITS_CHANGED"),
-                Context.RECEIVER_NOT_EXPORTED
-            )
-        } else {
-            requireActivity().registerReceiver(
-                unitsChangedReceiver, 
-                IntentFilter("com.android.stepsync.UNITS_CHANGED")
-            )
-        }
+        ContextCompat.registerReceiver(
+            requireContext(),
+            unitsChangedReceiver,
+            IntentFilter("com.android.stepsync.UNITS_CHANGED"),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
 
         checkTrackingStatus()
     }

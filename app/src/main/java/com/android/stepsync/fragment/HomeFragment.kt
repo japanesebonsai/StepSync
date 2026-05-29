@@ -5,12 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
@@ -211,20 +211,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         LocalBroadcastManager.getInstance(requireContext())
             .registerReceiver(trackingUpdateReceiver, intentFilter)
             
-        // Also register for global broadcasts (for unit changes from settings)
-        // Use RECEIVER_NOT_EXPORTED flag for Android 14+ compatibility
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requireActivity().registerReceiver(
-                unitsChangedReceiver, 
-                IntentFilter("com.android.stepsync.UNITS_CHANGED"),
-                Context.RECEIVER_NOT_EXPORTED
-            )
-        } else {
-            requireActivity().registerReceiver(
-                unitsChangedReceiver, 
-                IntentFilter("com.android.stepsync.UNITS_CHANGED")
-            )
-        }
+        ContextCompat.registerReceiver(
+            requireContext(),
+            unitsChangedReceiver,
+            IntentFilter("com.android.stepsync.UNITS_CHANGED"),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
             
         requestTrackingStatus()
         loadWeeklyStats()
