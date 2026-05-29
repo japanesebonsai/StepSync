@@ -60,19 +60,16 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Email format validation
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 emailLayout.error = "Enter a valid email address"
                 return@setOnClickListener
             }
 
-            // Password length validation
             if (password.length < 8) {
                 passwordLayout.error = "Password must be at least 8 characters"
                 return@setOnClickListener
             }
 
-            // Password match validation
             if (password != confirm) {
                 confirmLayout.error = "Passwords do not match"
                 return@setOnClickListener
