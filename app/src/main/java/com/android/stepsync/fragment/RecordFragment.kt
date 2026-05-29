@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,7 +16,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -46,7 +47,6 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
 
     private var isTracking = false
     private var isPaused = false
-    private val PERMISSION_REQUEST_ACTIVITY_RECOGNITION = 1001
 
     private var currentTimeSeconds: Long = 0
     private var currentDistanceKm: Float = 0f
@@ -55,6 +55,16 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     
     private lateinit var pauseButton: Button
     private var currentUserId: String = ""
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        if (results.values.all { it }) {
+            Log.d(TAG, "Tracking permissions granted")
+        } else {
+            Log.d(TAG, "One or more tracking permissions denied")
+        }
+    }
 
     private val unitsChangedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -206,36 +216,15 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
-        if (ContextCompat.checkSelfPermission(
-                requireContext(), Manifest.permission.FOREGROUND_SERVICE_LOCATION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
         }
 
         if (permissionsToRequest.isNotEmpty()) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                permissionsToRequest.toTypedArray(),
-                PERMISSION_REQUEST_ACTIVITY_RECOGNITION
-            )
-        }
-    }
-
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            PERMISSION_REQUEST_ACTIVITY_RECOGNITION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "Activity recognition permission granted")
-                } else {
-                    Log.d(TAG, "Activity recognition permission denied")
-                }
-            }
-            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
     }
 

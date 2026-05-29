@@ -194,7 +194,7 @@ class StepTrackingService : Service(), SensorEventListener {
 
             isTracking = false
 
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
 
             broadcastTrackingStatus()
