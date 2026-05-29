@@ -21,6 +21,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
 import com.android.stepsync.app.MyApplication
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class StepTrackingService : Service(), SensorEventListener {
@@ -158,10 +159,19 @@ class StepTrackingService : Service(), SensorEventListener {
             createNotificationChannel()
             val notification = createNotification()
             
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(NOTIFICATION_ID, notification, 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
                     android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or
-                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
+                )
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+                )
             } else {
                 startForeground(NOTIFICATION_ID, notification)
             }
@@ -194,7 +204,7 @@ class StepTrackingService : Service(), SensorEventListener {
 
             isTracking = false
 
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
 
             broadcastTrackingStatus()
@@ -401,10 +411,10 @@ class StepTrackingService : Service(), SensorEventListener {
         val distanceText = when (unitPreference) {
             "Miles (mi)" -> {
                 val distanceMiles = totalDistanceKm * 0.621371f
-                String.format("%.2f mi", distanceMiles)
+                String.format(Locale.getDefault(), "%.2f mi", distanceMiles)
             }
             else -> {
-                String.format("%.2f km", totalDistanceKm)
+                String.format(Locale.getDefault(), "%.2f km", totalDistanceKm)
             }
         }
         

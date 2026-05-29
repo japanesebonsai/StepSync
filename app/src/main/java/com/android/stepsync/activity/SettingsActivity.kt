@@ -358,7 +358,7 @@ class SettingsActivity : AppCompatActivity() {
                     val seconds = ((minutesPerMile - minutes) * 60).toInt()
                     
                     // Format as MM:SS
-                    String.format("%d:%02d /mi", minutes, seconds)
+                    String.format(Locale.getDefault(), "%d:%02d /mi", minutes, seconds)
                 }
                 else -> { // Kilometers
                     // Calculate minutes per km
@@ -367,7 +367,7 @@ class SettingsActivity : AppCompatActivity() {
                     val seconds = ((minutesPerKm - minutes) * 60).toInt()
                     
                     // Format as MM:SS
-                    String.format("%d:%02d /km", minutes, seconds)
+                    String.format(Locale.getDefault(), "%d:%02d /km", minutes, seconds)
                 }
             }
         }
