@@ -479,56 +479,40 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             
             android.util.Log.d(TAG, "Loading weekly stats for user: $userId, starting from: $startOfWeekMillis")
 
-            dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(allActivitiesSnapshot: DataSnapshot) {
-                    android.util.Log.d(TAG, "All activities data snapshot size: ${allActivitiesSnapshot.childrenCount}")
+            dbRef.orderByChild("timestamp")
+                .startAt(startOfWeekMillis.toDouble())
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        var totalActivities = 0
+                        var totalTimeSeconds = 0L
+                        var totalDistanceKm = 0f
 
-                    if (allActivitiesSnapshot.childrenCount > 0) {
-                        dbRef.orderByChild("timestamp")
-                            .startAt(startOfWeekMillis.toDouble())
-                            .addValueEventListener(object : ValueEventListener {
-                                override fun onDataChange(snapshot: DataSnapshot) {
-                                    var totalActivities = 0
-                                    var totalTimeSeconds = 0L
-                                    var totalDistanceKm = 0f
-                                    
-                                    android.util.Log.d(TAG, "Weekly data snapshot size: ${snapshot.childrenCount}")
-                                    
-                                    for (activitySnapshot in snapshot.children) {
-                                        android.util.Log.d(TAG, "Processing activity with key: ${activitySnapshot.key}")
-                                        
-                                        val activity = activitySnapshot.getValue(ActivityRecord::class.java)
-                                        activity?.let {
-                                            android.util.Log.d(TAG, "Activity found: id=${it.id}, time=${it.durationSeconds}s, distance=${it.distanceKm}km, timestamp=${it.timestamp}")
-                                            totalActivities++
-                                            totalTimeSeconds += it.durationSeconds
-                                            totalDistanceKm += it.distanceKm
-                                        } ?: android.util.Log.e(TAG, "Failed to parse activity from snapshot")
-                                    }
-                                    
-                                    android.util.Log.d(TAG, "Weekly stats totals: activities=$totalActivities, time=${totalTimeSeconds}s, distance=${totalDistanceKm}km")
+                        android.util.Log.d(TAG, "Weekly data snapshot size: ${snapshot.childrenCount}")
 
-                                    activity?.runOnUiThread {
-                                        updateWeeklyStats(totalActivities, totalTimeSeconds, totalDistanceKm)
-                                    }
-                                }
-                                
-                                override fun onCancelled(error: DatabaseError) {
-                                    android.util.Log.e(TAG, "Database error: ${error.message}")
-                                    updateWeeklyStats(0, 0, 0f)
-                                }
-                            })
-                    } else {
-                        android.util.Log.d(TAG, "No activities found in database for this user")
+                        for (activitySnapshot in snapshot.children) {
+                            android.util.Log.d(TAG, "Processing activity with key: ${activitySnapshot.key}")
+
+                            val activity = activitySnapshot.getValue(ActivityRecord::class.java)
+                            activity?.let {
+                                android.util.Log.d(TAG, "Activity found: id=${it.id}, time=${it.durationSeconds}s, distance=${it.distanceKm}km, timestamp=${it.timestamp}")
+                                totalActivities++
+                                totalTimeSeconds += it.durationSeconds
+                                totalDistanceKm += it.distanceKm
+                            } ?: android.util.Log.e(TAG, "Failed to parse activity from snapshot")
+                        }
+
+                        android.util.Log.d(TAG, "Weekly stats totals: activities=$totalActivities, time=${totalTimeSeconds}s, distance=${totalDistanceKm}km")
+
+                        activity?.runOnUiThread {
+                            updateWeeklyStats(totalActivities, totalTimeSeconds, totalDistanceKm)
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        android.util.Log.e(TAG, "Database error: ${error.message}")
                         updateWeeklyStats(0, 0, 0f)
                     }
-                }
-                
-                override fun onCancelled(error: DatabaseError) {
-                    android.util.Log.e(TAG, "Database error when checking all activities: ${error.message}")
-                    updateWeeklyStats(0, 0, 0f)
-                }
-            })
+                })
         } else {
             android.util.Log.d(TAG, "No user logged in, showing zeros")
             updateWeeklyStats(0, 0, 0f)
