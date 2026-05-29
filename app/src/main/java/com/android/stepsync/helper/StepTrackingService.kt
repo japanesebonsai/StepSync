@@ -16,7 +16,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
 import com.android.stepsync.app.MyApplication
@@ -235,7 +234,7 @@ class StepTrackingService : Service(), SensorEventListener {
             putExtra(EXTRA_IS_PAUSED, isPaused)
             putExtra(EXTRA_USER_ID, currentUserId)
         }
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        sendStepSyncBroadcast(intent)
     }
 
     private fun saveTrackingStatus() {
@@ -251,7 +250,7 @@ class StepTrackingService : Service(), SensorEventListener {
             putExtra(EXTRA_TIME, elapsedTimeSeconds)
             putExtra(EXTRA_USER_ID, currentUserId)
         }
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        sendStepSyncBroadcast(intent)
     }
 
     private fun broadcastDistanceUpdate() {
@@ -259,7 +258,7 @@ class StepTrackingService : Service(), SensorEventListener {
             putExtra(EXTRA_DISTANCE, totalDistanceKm)
             putExtra(EXTRA_USER_ID, currentUserId)
         }
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        sendStepSyncBroadcast(intent)
     }
 
     private fun broadcastSpeedUpdate() {
@@ -267,7 +266,7 @@ class StepTrackingService : Service(), SensorEventListener {
             putExtra(EXTRA_SPEED, currentSpeedKmh)
             putExtra(EXTRA_USER_ID, currentUserId)
         }
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        sendStepSyncBroadcast(intent)
     }
 
     private fun broadcastStepsUpdate() {
@@ -275,7 +274,12 @@ class StepTrackingService : Service(), SensorEventListener {
             putExtra(EXTRA_STEPS, currentSteps)
             putExtra(EXTRA_USER_ID, currentUserId)
         }
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        sendStepSyncBroadcast(intent)
+    }
+
+    private fun sendStepSyncBroadcast(intent: Intent) {
+        intent.setPackage(packageName)
+        sendBroadcast(intent)
     }
 
     override fun onSensorChanged(event: SensorEvent) {

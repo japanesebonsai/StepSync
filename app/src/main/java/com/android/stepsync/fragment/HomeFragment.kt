@@ -13,7 +13,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.SettingsActivity
 import com.android.stepsync.app.MyApplication
@@ -51,23 +50,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var dailyTotalSteps = 0
     private var distanceUnit = "km"
     private var currentUserId: String = ""
-    
-    private val unitsChangedReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == StepSyncConfig.ACTION_UNITS_CHANGED) {
-                val unitType = intent.getStringExtra(StepSyncConfig.EXTRA_UNIT_TYPE)
-                updateDisplayUnits(unitType)
-                val isTracking = sharedPreferences.getBoolean(StepTrackingService.PREF_IS_TRACKING, false)
-                val distance = sharedPreferences.getFloat(StepSyncConfig.KEY_CURRENT_DISTANCE, 0f)
-                val speed = sharedPreferences.getFloat(StepSyncConfig.KEY_CURRENT_SPEED, 0f)
-                
-                updateDistanceDisplay(distance)
-                updateSpeedDisplay(speed)
-                updateStatusDisplay(isTracking)
-                loadWeeklyStats()
-            }
-        }
-    }
     
     private val trackingUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -108,6 +90,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         renderDailyStepProgress()
                     }
                     
+                    loadWeeklyStats()
+                }
+                StepSyncConfig.ACTION_UNITS_CHANGED -> {
+                    val unitType = intent.getStringExtra(StepSyncConfig.EXTRA_UNIT_TYPE)
+                    updateDisplayUnits(unitType)
+                    val isTracking = sharedPreferences.getBoolean(StepTrackingService.PREF_IS_TRACKING, false)
+                    val distance = sharedPreferences.getFloat(StepSyncConfig.KEY_CURRENT_DISTANCE, 0f)
+                    val speed = sharedPreferences.getFloat(StepSyncConfig.KEY_CURRENT_SPEED, 0f)
+
+                    updateDistanceDisplay(distance)
+                    updateSpeedDisplay(speed)
+                    updateStatusDisplay(isTracking)
                     loadWeeklyStats()
                 }
             }
@@ -189,13 +183,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             addAction(StepSyncConfig.ACTION_UNITS_CHANGED)
         }
         
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(trackingUpdateReceiver, intentFilter)
-            
         ContextCompat.registerReceiver(
             requireContext(),
-            unitsChangedReceiver,
-            IntentFilter(StepSyncConfig.ACTION_UNITS_CHANGED),
+            trackingUpdateReceiver,
+            intentFilter,
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
             
@@ -206,11 +197,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onPause() {
         super.onPause()
         
-        LocalBroadcastManager.getInstance(requireContext())
-            .unregisterReceiver(trackingUpdateReceiver)
-            
         try {
-            requireActivity().unregisterReceiver(unitsChangedReceiver)
+            requireActivity().unregisterReceiver(trackingUpdateReceiver)
         } catch (_: IllegalArgumentException) {
         }
     }

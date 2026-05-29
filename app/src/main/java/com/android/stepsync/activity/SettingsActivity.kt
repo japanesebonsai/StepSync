@@ -3,8 +3,9 @@ package com.android.stepsync.activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.view.MotionEvent
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
@@ -22,7 +23,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import java.text.NumberFormat
 import java.util.Locale
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class SettingsActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
@@ -120,7 +120,15 @@ class SettingsActivity : AppCompatActivity() {
         switchNotifications.isChecked = notificationsEnabled
         switchDataSync.isChecked = dataSyncEnabled
         
-        val versionName = packageManager.getPackageInfo(packageName, 0).versionName
+        val versionName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageInfo(
+                packageName,
+                PackageManager.PackageInfoFlags.of(0)
+            ).versionName
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0).versionName
+        }
         textAppVersion.text = versionName
         
         layoutStepLength.setOnClickListener {
@@ -167,7 +175,6 @@ class SettingsActivity : AppCompatActivity() {
             val intent = Intent(StepSyncConfig.ACTION_UNITS_CHANGED)
                 .putExtra(StepSyncConfig.EXTRA_UNIT_TYPE, selectedUnit)
 
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
             intent.setPackage(packageName)
             sendBroadcast(intent)
         }

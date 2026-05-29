@@ -17,7 +17,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
 import com.android.stepsync.app.MyApplication
@@ -60,18 +59,6 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
         }
     }
 
-    private val unitsChangedReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == StepSyncConfig.ACTION_UNITS_CHANGED) {
-                val unitType = intent.getStringExtra(StepSyncConfig.EXTRA_UNIT_TYPE)
-                updateDisplayUnits(unitType)
-                updateTimeDisplay(currentTimeSeconds)
-                updateDistanceDisplay(currentDistanceKm)
-                updateSpeedDisplay(currentSpeedKmh)
-            }
-        }
-    }
-
     private val trackingUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
@@ -99,6 +86,13 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                     isTracking = intent.getBooleanExtra(StepTrackingService.EXTRA_IS_TRACKING, false)
                     isPaused = intent.getBooleanExtra(StepTrackingService.EXTRA_IS_PAUSED, false)
                     updateUI()
+                }
+                StepSyncConfig.ACTION_UNITS_CHANGED -> {
+                    val unitType = intent.getStringExtra(StepSyncConfig.EXTRA_UNIT_TYPE)
+                    updateDisplayUnits(unitType)
+                    updateTimeDisplay(currentTimeSeconds)
+                    updateDistanceDisplay(currentDistanceKm)
+                    updateSpeedDisplay(currentSpeedKmh)
                 }
             }
         }
@@ -159,13 +153,10 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
             addAction(StepTrackingService.ACTION_TRACKING_STATUS)
             addAction(StepSyncConfig.ACTION_UNITS_CHANGED)
         }
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(trackingUpdateReceiver, intentFilter)
-            
         ContextCompat.registerReceiver(
             requireContext(),
-            unitsChangedReceiver,
-            IntentFilter(StepSyncConfig.ACTION_UNITS_CHANGED),
+            trackingUpdateReceiver,
+            intentFilter,
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
@@ -175,11 +166,8 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
     override fun onPause() {
         super.onPause()
 
-        LocalBroadcastManager.getInstance(requireContext())
-            .unregisterReceiver(trackingUpdateReceiver)
-            
         try {
-            requireActivity().unregisterReceiver(unitsChangedReceiver)
+            requireActivity().unregisterReceiver(trackingUpdateReceiver)
         } catch (_: IllegalArgumentException) {
         }
     }
@@ -275,7 +263,8 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                     .addOnSuccessListener {
                         val intent = Intent(HomeFragment.ACTION_ACTIVITY_COMPLETED)
                         intent.putExtra("activity_steps", currentSteps)
-                        LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
+                        intent.setPackage(requireContext().packageName)
+                        requireContext().sendBroadcast(intent)
 
                         val activityContext = activity ?: return@addOnSuccessListener
                         if (!isAdded) return@addOnSuccessListener
