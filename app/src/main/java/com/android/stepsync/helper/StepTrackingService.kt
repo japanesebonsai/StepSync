@@ -5,8 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -15,6 +17,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
@@ -22,6 +26,7 @@ import com.android.stepsync.app.MyApplication
 import com.android.stepsync.utils.StepSyncConfig
 import com.android.stepsync.utils.TrackingFormatters
 import java.util.concurrent.TimeUnit
+import kotlin.math.sqrt
 
 class StepTrackingService : Service(), SensorEventListener {
     companion object {
@@ -51,8 +56,21 @@ class StepTrackingService : Service(), SensorEventListener {
         const val PREFS_NAME = StepSyncConfig.PREFS_NAME
         const val PREF_IS_TRACKING = "is_tracking"
         const val PREF_IS_PAUSED = "is_paused"
+        const val PREF_TRACKING_SENSOR_MODE = "tracking_sensor_mode"
+        const val PREF_TRACKING_SENSOR_DELAY_US = "tracking_sensor_delay_us"
+        const val PREF_TRACKING_UPDATE_INTERVAL_MS = "tracking_update_interval_ms"
+        const val PREF_TRACKING_NOTIFICATION_INTERVAL_MS = "tracking_notification_interval_ms"
+        const val PREF_TRACKING_SENSOR_EVENTS = "tracking_sensor_events"
+        const val PREF_TRACKING_BROADCASTS = "tracking_broadcasts"
+        const val PREF_TRACKING_STARTED_AT = "tracking_started_at"
 
-        private const val UPDATE_INTERVAL_MS = 1000L
+        private const val NORMAL_UPDATE_INTERVAL_MS = 1000L
+        private const val POWER_SAVE_UPDATE_INTERVAL_MS = 5_000L
+        private const val NORMAL_SENSOR_DELAY_US = 120_000
+        private const val POWER_SAVE_SENSOR_DELAY_US = 1_000_000
+        private const val NORMAL_NOTIFICATION_INTERVAL_MS = 5_000L
+        private const val POWER_SAVE_NOTIFICATION_INTERVAL_MS = 15_000L
+        private const val TAG = "StepTrackingService"
     }
 
     private var isTracking = false
@@ -69,14 +87,32 @@ class StepTrackingService : Service(), SensorEventListener {
     private var currentUserId: String = ""
 
     private lateinit var sensorManager: SensorManager
+    private lateinit var powerManager: PowerManager
     private var stepSensor: Sensor? = null
+    private var accelerometerSensor: Sensor? = null
+    private var gyroscopeSensor: Sensor? = null
+    private var activeSensorMode = TrackingSensorMode.NONE
+    private var activeSensorDelayUs = NORMAL_SENSOR_DELAY_US
+    private var sensorEventCount = 0L
+    private var broadcastCount = 0L
+    private var lastNotificationUpdateMillis = 0L
+    private var latestGyroMagnitude: Float? = null
+    private val fallbackStepDetector = AdaptiveStepDetector()
+
+    private val powerSaveReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == PowerManager.ACTION_POWER_SAVE_MODE_CHANGED && isTracking && !isPaused) {
+                registerTrackingSensors()
+            }
+        }
+    }
 
     private val handler = Handler(Looper.getMainLooper())
     private val updateRunnable = object : Runnable {
         override fun run() {
             if (isTracking) {
                 updateTracking()
-                handler.postDelayed(this, UPDATE_INTERVAL_MS)
+                handler.postDelayed(this, activeUpdateIntervalMs())
             }
         }
     }
@@ -84,12 +120,19 @@ class StepTrackingService : Service(), SensorEventListener {
     override fun onCreate() {
         super.onCreate()
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         
         val app = application as? MyApplication
         currentUserId = app?.firebaseAuth?.currentUser?.uid ?: ""
         
         loadStepLengthFromSettings()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            registerReceiver(powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED))
+        }
     }
 
     private fun loadStepLengthFromSettings() {
@@ -110,6 +153,13 @@ class StepTrackingService : Service(), SensorEventListener {
             ACTION_REQUEST_STATUS -> broadcastCurrentStatus()
             StepSyncConfig.ACTION_UNITS_CHANGED -> {
                 loadStepLengthFromSettings()
+            }
+            StepSyncConfig.ACTION_TRACKING_POWER_SAVER_CHANGED -> {
+                if (isTracking && !isPaused) {
+                    registerTrackingSensors()
+                    handler.removeCallbacks(updateRunnable)
+                    handler.post(updateRunnable)
+                }
             }
         }
 
@@ -144,10 +194,13 @@ class StepTrackingService : Service(), SensorEventListener {
             currentSpeedKmh = 0f
             startTimeMillis = System.currentTimeMillis()
             elapsedTimeSeconds = 0
+            sensorEventCount = 0L
+            broadcastCount = 0L
+            lastNotificationUpdateMillis = 0L
+            latestGyroMagnitude = null
+            fallbackStepDetector.reset()
 
-            stepSensor?.let {
-                sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
-            }
+            registerTrackingSensors()
 
             isTracking = true
             handler.post(updateRunnable)
@@ -158,7 +211,7 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun stopTracking() {
         if (isTracking) {
-            sensorManager.unregisterListener(this)
+            unregisterTrackingSensors()
 
             handler.removeCallbacks(updateRunnable)
 
@@ -173,7 +226,7 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun pauseTracking() {
         if (isTracking && !isPaused) {
-            sensorManager.unregisterListener(this)
+            unregisterTrackingSensors()
             handler.removeCallbacks(updateRunnable)
             pausedTimeMillis = System.currentTimeMillis()
             isPaused = true
@@ -188,9 +241,7 @@ class StepTrackingService : Service(), SensorEventListener {
             val pauseDuration = System.currentTimeMillis() - pausedTimeMillis
             totalPausedMillis += pauseDuration
 
-            stepSensor?.let {
-                sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
-            }
+            registerTrackingSensors()
 
             isPaused = false
             handler.post(updateRunnable)
@@ -214,8 +265,54 @@ class StepTrackingService : Service(), SensorEventListener {
             broadcastSpeedUpdate()
             broadcastStepsUpdate()
 
-            updateNotification()
+            updateNotificationThrottled()
         }
+    }
+
+    private fun registerTrackingSensors() {
+        unregisterTrackingSensors()
+
+        val isPowerSave = isPowerSaverTrackingActive()
+
+        activeSensorDelayUs = if (isPowerSave) POWER_SAVE_SENSOR_DELAY_US else NORMAL_SENSOR_DELAY_US
+        activeSensorMode = when {
+            stepSensor != null -> TrackingSensorMode.HARDWARE_STEP_COUNTER
+            isPowerSave -> TrackingSensorMode.ACCELEROMETER_ONLY
+            gyroscopeSensor != null -> TrackingSensorMode.ACCELEROMETER_GYROSCOPE
+            else -> TrackingSensorMode.ACCELEROMETER_ONLY
+        }
+
+        when (activeSensorMode) {
+            TrackingSensorMode.HARDWARE_STEP_COUNTER -> {
+                stepSensor?.let {
+                    sensorManager.registerListener(this, it, activeSensorDelayUs)
+                }
+            }
+            TrackingSensorMode.ACCELEROMETER_GYROSCOPE -> {
+                accelerometerSensor?.let {
+                    sensorManager.registerListener(this, it, activeSensorDelayUs)
+                }
+                gyroscopeSensor?.let {
+                    sensorManager.registerListener(this, it, activeSensorDelayUs)
+                }
+            }
+            TrackingSensorMode.ACCELEROMETER_ONLY -> {
+                accelerometerSensor?.let {
+                    sensorManager.registerListener(this, it, activeSensorDelayUs)
+                }
+            }
+            TrackingSensorMode.NONE -> {
+                Log.w(TAG, "No step counter or accelerometer sensor is available")
+            }
+        }
+
+        saveTrackingDiagnostics()
+    }
+
+    private fun unregisterTrackingSensors() {
+        sensorManager.unregisterListener(this)
+        activeSensorMode = TrackingSensorMode.NONE
+        activeSensorDelayUs = NORMAL_SENSOR_DELAY_US
     }
 
     private fun broadcastCurrentStatus() {
@@ -242,6 +339,19 @@ class StepTrackingService : Service(), SensorEventListener {
             .edit()
             .putBoolean(PREF_IS_TRACKING, isTracking)
             .putBoolean(PREF_IS_PAUSED, isPaused)
+            .putLong(PREF_TRACKING_STARTED_AT, startTimeMillis)
+            .apply()
+    }
+
+    private fun saveTrackingDiagnostics() {
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(PREF_TRACKING_SENSOR_MODE, activeSensorMode.name)
+            .putInt(PREF_TRACKING_SENSOR_DELAY_US, activeSensorDelayUs)
+            .putLong(PREF_TRACKING_UPDATE_INTERVAL_MS, activeUpdateIntervalMs())
+            .putLong(PREF_TRACKING_NOTIFICATION_INTERVAL_MS, activeNotificationIntervalMs())
+            .putLong(PREF_TRACKING_SENSOR_EVENTS, sensorEventCount)
+            .putLong(PREF_TRACKING_BROADCASTS, broadcastCount)
             .apply()
     }
 
@@ -278,25 +388,72 @@ class StepTrackingService : Service(), SensorEventListener {
     }
 
     private fun sendStepSyncBroadcast(intent: Intent) {
+        broadcastCount++
+        if (broadcastCount % 10L == 0L) {
+            saveTrackingDiagnostics()
+        }
         intent.setPackage(packageName)
         sendBroadcast(intent)
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
-            val steps = event.values[0].toInt()
+        sensorEventCount++
 
-            if (initialStepCount == -1) {
-                initialStepCount = steps
+        when (event.sensor.type) {
+            Sensor.TYPE_STEP_COUNTER -> handleHardwareStepCounter(event)
+            Sensor.TYPE_ACCELEROMETER -> handleAccelerometerFallback(event)
+            Sensor.TYPE_GYROSCOPE -> {
+                latestGyroMagnitude = sqrt(
+                    (event.values[0] * event.values[0] +
+                        event.values[1] * event.values[1] +
+                        event.values[2] * event.values[2]).toDouble()
+                ).toFloat()
             }
+        }
 
-            val newSteps = steps - initialStepCount
-            val additionalSteps = newSteps - currentSteps
-            currentSteps = newSteps
+        if (sensorEventCount % 25L == 0L) {
+            saveTrackingDiagnostics()
+        }
+    }
 
-            if (additionalSteps > 0) {
-                val additionalDistanceMeters = additionalSteps * stepLengthMeters
-                totalDistanceKm += (additionalDistanceMeters / 1000f)
+    private fun handleHardwareStepCounter(event: SensorEvent) {
+        val steps = event.values[0].toInt()
+
+        if (initialStepCount == -1) {
+            initialStepCount = steps
+        }
+
+        val newSteps = steps - initialStepCount
+        val additionalSteps = newSteps - currentSteps
+        currentSteps = newSteps
+
+        if (additionalSteps > 0) {
+            addDetectedSteps(additionalSteps)
+        }
+    }
+
+    private fun handleAccelerometerFallback(event: SensorEvent) {
+        val allowGyroAssist = activeSensorMode == TrackingSensorMode.ACCELEROMETER_GYROSCOPE
+        val detectedStep = fallbackStepDetector.onAcceleration(
+            x = event.values[0],
+            y = event.values[1],
+            z = event.values[2],
+            timestampNs = event.timestamp,
+            gyroMagnitude = latestGyroMagnitude,
+            allowGyroAssist = allowGyroAssist
+        )
+
+        if (detectedStep) {
+            currentSteps++
+            addDetectedSteps(1)
+        }
+    }
+
+    private fun addDetectedSteps(additionalSteps: Int) {
+        if (additionalSteps > 0) {
+            val additionalDistanceMeters = additionalSteps * stepLengthMeters
+            totalDistanceKm += (additionalDistanceMeters / 1000f)
+            if (!isPowerSaverTrackingActive()) {
                 broadcastDistanceUpdate()
                 broadcastSpeedUpdate()
                 broadcastStepsUpdate()
@@ -358,6 +515,41 @@ class StepTrackingService : Service(), SensorEventListener {
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
+    private fun updateNotificationThrottled() {
+        val now = System.currentTimeMillis()
+        if (now - lastNotificationUpdateMillis >= activeNotificationIntervalMs()) {
+            lastNotificationUpdateMillis = now
+            updateNotification()
+        }
+    }
+
+    private fun activeUpdateIntervalMs(): Long {
+        return if (isPowerSaverTrackingActive()) {
+            POWER_SAVE_UPDATE_INTERVAL_MS
+        } else {
+            NORMAL_UPDATE_INTERVAL_MS
+        }
+    }
+
+    private fun activeNotificationIntervalMs(): Long {
+        return if (isPowerSaverTrackingActive()) {
+            POWER_SAVE_NOTIFICATION_INTERVAL_MS
+        } else {
+            NORMAL_NOTIFICATION_INTERVAL_MS
+        }
+    }
+
+    private fun isPowerSaverTrackingActive(): Boolean {
+        val appPowerSaverEnabled = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(
+                StepSyncConfig.KEY_POWER_SAVER_TRACKING,
+                StepSyncConfig.DEFAULT_POWER_SAVER_TRACKING
+            )
+
+        return appPowerSaverEnabled ||
+            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && powerManager.isPowerSaveMode)
+    }
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -366,8 +558,22 @@ class StepTrackingService : Service(), SensorEventListener {
         super.onDestroy()
 
         if (isTracking) {
-            sensorManager.unregisterListener(this)
+            unregisterTrackingSensors()
             handler.removeCallbacks(updateRunnable)
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                unregisterReceiver(powerSaveReceiver)
+            } catch (_: IllegalArgumentException) {
+            }
+        }
+    }
+
+    private enum class TrackingSensorMode {
+        NONE,
+        HARDWARE_STEP_COUNTER,
+        ACCELEROMETER_GYROSCOPE,
+        ACCELEROMETER_ONLY
     }
 }

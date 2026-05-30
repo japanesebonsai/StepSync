@@ -8,6 +8,7 @@ object StepSyncConfig {
     const val LOGIN_PREFS_NAME = "login_prefs"
 
     const val ACTION_UNITS_CHANGED = "com.android.stepsync.UNITS_CHANGED"
+    const val ACTION_TRACKING_POWER_SAVER_CHANGED = "com.android.stepsync.TRACKING_POWER_SAVER_CHANGED"
     const val EXTRA_UNIT_TYPE = "unit_type"
 
     const val KEY_STEP_LENGTH = "step_length"
@@ -16,6 +17,7 @@ object StepSyncConfig {
     const val KEY_THEME = "theme"
     const val KEY_NOTIFICATIONS = "notifications"
     const val KEY_DATA_SYNC = "data_sync"
+    const val KEY_POWER_SAVER_TRACKING = "power_saver_tracking"
     const val KEY_CURRENT_DISTANCE = "current_distance"
     const val KEY_CURRENT_SPEED = "current_speed"
     const val KEY_CURRENT_TIME_SECONDS = "current_time_seconds"
@@ -29,6 +31,7 @@ object StepSyncConfig {
     const val DEFAULT_THEME = "Light"
     const val DEFAULT_NOTIFICATIONS = true
     const val DEFAULT_DATA_SYNC = true
+    const val DEFAULT_POWER_SAVER_TRACKING = false
 
     const val UNIT_KILOMETERS = "Kilometers (km)"
     const val UNIT_MILES = "Miles (mi)"

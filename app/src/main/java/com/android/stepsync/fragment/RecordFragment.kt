@@ -21,6 +21,7 @@ import com.android.stepsync.R
 import com.android.stepsync.activity.DashboardActivity
 import com.android.stepsync.app.MyApplication
 import com.android.stepsync.data.ActivityRecord
+import com.android.stepsync.helper.ActivitySyncBuffer
 import com.android.stepsync.helper.StepTrackingService
 import com.android.stepsync.utils.StepSyncConfig
 import com.android.stepsync.utils.TrackingFormatters
@@ -255,33 +256,48 @@ class RecordFragment : Fragment(R.layout.fragment_record) {
                     steps = currentSteps
                 )
 
-                val dbRef = (requireActivity().application as MyApplication)
-                    .database
-                    .getReference("user_activities/$userId/$activityId")
+                val app = requireActivity().application as MyApplication
+                val syncBuffer = ActivitySyncBuffer(requireContext())
+                syncBuffer.enqueue(activityRecord)
 
-                dbRef.setValue(activityRecord)
-                    .addOnSuccessListener {
-                        val intent = Intent(HomeFragment.ACTION_ACTIVITY_COMPLETED)
-                        intent.putExtra("activity_steps", currentSteps)
-                        intent.setPackage(requireContext().packageName)
-                        requireContext().sendBroadcast(intent)
+                val dataSyncEnabled = sharedPreferences.getBoolean(
+                    StepSyncConfig.KEY_DATA_SYNC,
+                    StepSyncConfig.DEFAULT_DATA_SYNC
+                )
+                if (!dataSyncEnabled) {
+                    Toast.makeText(context, "Activity saved locally. Auto sync is off.", Toast.LENGTH_SHORT).show()
+                    handleActivitySaved()
+                    return
+                }
 
-                        val activityContext = activity ?: return@addOnSuccessListener
-                        if (!isAdded) return@addOnSuccessListener
-
-                        Toast.makeText(activityContext, "Activity recorded successfully!", Toast.LENGTH_SHORT).show()
-                        (activityContext as? DashboardActivity)?.switchToHomeAndUpdateStats()
-                    }
-                    .addOnFailureListener { e ->
+                syncBuffer.flush(app.database.reference, userId,
+                    onSuccess = {
+                        handleActivitySaved()
+                    },
+                    onFailure = { e ->
                         Log.e(TAG, "Error saving activity: ${e.message}")
-                        Toast.makeText(context, "Failed to save activity: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Saved locally. Sync will retry next time.", Toast.LENGTH_SHORT).show()
                     }
+                )
             } else {
                 Toast.makeText(context, "Sign in again to save this activity.", Toast.LENGTH_SHORT).show()
             }
         } else {
             Toast.makeText(context, "Activity too short. Record for at least 10 seconds.", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun handleActivitySaved() {
+        val intent = Intent(HomeFragment.ACTION_ACTIVITY_COMPLETED)
+        intent.putExtra("activity_steps", currentSteps)
+        intent.setPackage(requireContext().packageName)
+        requireContext().sendBroadcast(intent)
+
+        val activityContext = activity ?: return
+        if (!isAdded) return
+
+        Toast.makeText(activityContext, "Activity recorded successfully!", Toast.LENGTH_SHORT).show()
+        (activityContext as? DashboardActivity)?.switchToHomeAndUpdateStats()
     }
 
     private fun checkTrackingStatus() {

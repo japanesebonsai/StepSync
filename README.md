@@ -28,12 +28,26 @@
   <img src="docs/assets/stepsync-home.png" alt="StepSync home screen showing daily goal, current activity, and weekly stats" width="340" />
 </p>
 
+## Spotlight: Power Saver Tracking
+
+StepSync includes a Power Saver Tracking mode focused on reducing background tracking work while preserving step-count recording. On devices with Android's hardware step counter, the optimized path keeps pedometer-based tracking active while batching UI updates, throttling foreground notification refreshes, and using low-frequency sensor registration.
+
+In a 30-minute background Android BatteryStats comparison, StepSync reduced app-attributed tracking CPU power from `1.17 mAh` to `0.248 mAh`, a `78.8%` reduction. The test compared the original hardware step-counter tracking loop against the optimized Power Saver path; it was not a GPS-vs-pedometer comparison.
+
+```text
+Baseline:  TYPE_STEP_COUNTER registered in the foreground service with a 1s Handler tick that rebroadcasts time, distance, speed, and steps.
+Optimized: TYPE_STEP_COUNTER kept active, but the service batches UI broadcasts every 5s, refreshes the foreground notification every 15s, and registers the sensor at a 1,000,000us delay in Power Saver mode.
+```
+
+Detailed results are available in [docs/battery-results/comparison-20260530-30min.md](docs/battery-results/comparison-20260530-30min.md).
+
 ## Features
 
 | Area | What StepSync Does |
 | --- | --- |
 | Account | Email/password sign up and login with Firebase Authentication |
 | Tracking | Foreground step tracking service with start, pause, resume, and stop |
+| Power | Adaptive sensor sampling with an in-app Power Saver Tracking mode |
 | Goals | Daily step goal progress with configurable step length |
 | Activity | Distance, duration, speed, pace, steps, and activity history |
 | Units | Kilometer and mile display support |

@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.android.stepsync.R
 import com.android.stepsync.app.MyApplication
+import com.android.stepsync.helper.StepTrackingService
 import com.android.stepsync.utils.StepSyncConfig
 import com.android.stepsync.utils.TrackingFormatters
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -42,6 +43,7 @@ class SettingsActivity : AppCompatActivity() {
         val autoCompleteTheme = findViewById<AutoCompleteTextView>(R.id.auto_complete_theme)
         val switchNotifications = findViewById<SwitchMaterial>(R.id.switch_notifications)
         val switchDataSync = findViewById<SwitchMaterial>(R.id.switch_data_sync)
+        val switchPowerSaverTracking = findViewById<SwitchMaterial>(R.id.switch_power_saver_tracking)
         val textAppVersion = findViewById<TextView>(R.id.text_app_version)
         
         val layoutStepLength = findViewById<LinearLayout>(R.id.layout_step_length)
@@ -68,6 +70,10 @@ class SettingsActivity : AppCompatActivity() {
         val dataSyncEnabled = sharedPreferences.getBoolean(
             StepSyncConfig.KEY_DATA_SYNC,
             StepSyncConfig.DEFAULT_DATA_SYNC
+        )
+        val powerSaverTrackingEnabled = sharedPreferences.getBoolean(
+            StepSyncConfig.KEY_POWER_SAVER_TRACKING,
+            StepSyncConfig.DEFAULT_POWER_SAVER_TRACKING
         )
         
         val formatter = NumberFormat.getNumberInstance(Locale.US)
@@ -119,6 +125,7 @@ class SettingsActivity : AppCompatActivity() {
         
         switchNotifications.isChecked = notificationsEnabled
         switchDataSync.isChecked = dataSyncEnabled
+        switchPowerSaverTracking.isChecked = powerSaverTrackingEnabled
         
         val versionName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             packageManager.getPackageInfo(
@@ -204,6 +211,26 @@ class SettingsActivity : AppCompatActivity() {
         switchDataSync.setOnCheckedChangeListener { _, isChecked ->
             sharedPreferences.edit().putBoolean(StepSyncConfig.KEY_DATA_SYNC, isChecked).apply()
             val message = if (isChecked) "Auto sync enabled" else "Auto sync disabled"
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
+
+        switchPowerSaverTracking.setOnCheckedChangeListener { _, isChecked ->
+            sharedPreferences.edit()
+                .putBoolean(StepSyncConfig.KEY_POWER_SAVER_TRACKING, isChecked)
+                .apply()
+
+            if (sharedPreferences.getBoolean(StepTrackingService.PREF_IS_TRACKING, false)) {
+                val serviceIntent = Intent(this, StepTrackingService::class.java).apply {
+                    action = StepSyncConfig.ACTION_TRACKING_POWER_SAVER_CHANGED
+                }
+                startService(serviceIntent)
+            }
+
+            val message = if (isChecked) {
+                "Power saver tracking enabled"
+            } else {
+                "Power saver tracking disabled"
+            }
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
 
